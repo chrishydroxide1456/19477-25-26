@@ -66,7 +66,7 @@ public class Outtake {
     public void maxRPM() {
         double TmotorVel = Tmotor.getVelocity();
         double BmotorVel = Bmotor.getVelocity();
-        if (TmotorVel > 4800*28/60 && BmotorVel > 4800*28/60) {
+        if (TmotorVel > 4800.0*28.0/60.0 && BmotorVel > 4800.0*28.0/60.0) {
             led.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
         }
         else {

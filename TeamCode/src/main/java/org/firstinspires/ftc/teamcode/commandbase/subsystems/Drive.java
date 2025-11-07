@@ -8,17 +8,15 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.hardware.RevIMU;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.drivebase.MecanumDrive;
-import com.seattlesolvers.solverslib.kinematics.wpilibkinematics.MecanumDriveOdometry;
-import com.seattlesolvers.solverslib.hardware.motors.MotorGroup;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 
-
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 
 public class Drive {
     private final Motor FLmotor, FRmotor, BLmotor, BRmotor;
-    private final DcMotorEx FLencoder, FRencoder, BLencoder, BRencoder;
     private final DcMotorEx Xdeadwheel, Ydeadwheel;
-    private final RevIMU imu;
+    private final GoBildaPinpointDriver imu;
 
     private final PIDFController xController;
     private final PIDFController yController;
@@ -26,8 +24,6 @@ public class Drive {
 
     private final MecanumDrive drive;
 
-    private MotorGroup driveMotor;
-    private MecanumDriveOdometry odometry; //deadwheels
 
     private double currentX  = 0, currentY = 0, currentHeading = 0;
     private double Xdeadwheeloffset = 0, Ydeadwheeloffset = 0;
@@ -39,10 +35,10 @@ public class Drive {
         BLmotor = hwMap.get(Motor.class, "BLmotor");
         BRmotor = hwMap.get(Motor.class, "BRmotor");
 
-        FLencoder = hwMap.get(DcMotorEx.class, "FLencoder");
-        FRencoder = hwMap.get(DcMotorEx.class, "FRencoder");
-        BLencoder = hwMap.get(DcMotorEx.class, "BLencoder");
-        BRencoder = hwMap.get(DcMotorEx.class, "BRencoder");
+//        FLencoder = hwMap.get(DcMotorEx.class, "FLencoder");
+//        FRencoder = hwMap.get(DcMotorEx.class, "FRencoder");
+//        BLencoder = hwMap.get(DcMotorEx.class, "BLencoder");
+//        BRencoder = hwMap.get(DcMotorEx.class, "BRencoder");
 
         Xdeadwheel = hwMap.get(DcMotorEx.class, "Xdeadwheel");
         Ydeadwheel = hwMap.get(DcMotorEx.class, "Ydeadwheel");
@@ -53,8 +49,8 @@ public class Drive {
 
         drive = new MecanumDrive(true, FLmotor, FRmotor, BLmotor, BRmotor);
 
-        imu = hwMap.get(RevIMU.class, "imu");
-        imu.init();
+        imu = hwMap.get(GoBildaPinpointDriver.class, "imu");
+        imu.initialize();
 
     }
 
@@ -76,7 +72,7 @@ public class Drive {
 //        double distancepertick = 10;//need to find later
 //        double robotmovement = avgencoderticks * distancepertick;
 
-        currentHeading = (imu.getHeading())*Math.PI/180;
+        currentHeading = (imu.getHeading(AngleUnit.RADIANS));
 
         Xdeadwheelmovement = Xdeadwheel.getCurrentPosition() - Xdeadwheeloffset;
         Ydeadwheelmovement = Ydeadwheel.getCurrentPosition() - Ydeadwheeloffset;
