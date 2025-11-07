@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 public class Drive {
     private final Motor FLmotor, FRmotor, BLmotor, BRmotor;
     private final DcMotorEx Xdeadwheel, Ydeadwheel;
-    private final GoBildaPinpointDriver imu;
+    private final GoBildaPinpointDriver pinpointDriver;
 
     private final PIDFController xController;
     private final PIDFController yController;
@@ -26,8 +26,8 @@ public class Drive {
 
 
     private double currentX  = 0, currentY = 0, currentHeading = 0;
-    private double Xdeadwheeloffset = 0, Ydeadwheeloffset = 0;
-    private double Xdeadwheelmovement = 0, Ydeadwheelmovement = 0;
+//    private double Xdeadwheeloffset = 0, Ydeadwheeloffset = 0;
+//    private double Xdeadwheelmovement = 0, Ydeadwheelmovement = 0;
 
     public Drive(HardwareMap hwMap) {
         FLmotor = hwMap.get(Motor.class, "FLmotor");
@@ -49,8 +49,7 @@ public class Drive {
 
         drive = new MecanumDrive(true, FLmotor, FRmotor, BLmotor, BRmotor);
 
-        imu = hwMap.get(GoBildaPinpointDriver.class, "imu");
-        imu.initialize();
+        pinpointDriver = new GoBildaPinpointDriver(Xdeadwheel, Ydeadwheel);
 
     }
 
@@ -74,14 +73,16 @@ public class Drive {
 
         currentHeading = (imu.getHeading(AngleUnit.RADIANS));
 
-        Xdeadwheelmovement = Xdeadwheel.getCurrentPosition() - Xdeadwheeloffset;
-        Ydeadwheelmovement = Ydeadwheel.getCurrentPosition() - Ydeadwheeloffset;
+//        Xdeadwheelmovement = Xdeadwheel.getCurrentPosition() - Xdeadwheeloffset;
+//        Ydeadwheelmovement = Ydeadwheel.getCurrentPosition() - Ydeadwheeloffset;
+//
+//        currentX += Xdeadwheelmovement * Math.cos(currentHeading);
+//        currentY += Ydeadwheelmovement * Math.sin(currentHeading);
+//
+//        Xdeadwheeloffset = Xdeadwheel.getCurrentPosition();
+//        Ydeadwheeloffset = Ydeadwheel.getCurrentPosition();
 
-        currentX += Xdeadwheelmovement * Math.cos(currentHeading);
-        currentY += Ydeadwheelmovement * Math.sin(currentHeading);
-
-        Xdeadwheeloffset = Xdeadwheel.getCurrentPosition();
-        Ydeadwheeloffset = Ydeadwheel.getCurrentPosition();
+        double currentX = imu.get
 
     }
 
