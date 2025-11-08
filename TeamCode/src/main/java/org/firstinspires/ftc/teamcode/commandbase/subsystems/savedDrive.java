@@ -5,10 +5,10 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-public class Drive {
+public class savedDrive {
     private final DcMotorEx FLmotor, FRmotor, BLmotor, BRmotor;
 
-    public Drive(HardwareMap hwMap) {
+    public savedDrive(HardwareMap hwMap) {
         FLmotor = hwMap.get(DcMotorEx.class, "FLmotor");
         FRmotor = hwMap.get(DcMotorEx.class, "FRmotor");
         BLmotor = hwMap.get(DcMotorEx.class, "BLmotor");
@@ -23,13 +23,12 @@ public class Drive {
 
     public void driveto(Gamepad gamepad) {
         double y = -gamepad.left_stick_y;       // forward/back
-        double x =
-                gamepad.left_stick_x * 1.1;  // strafe
+        double x = gamepad.left_stick_x * 1.1;  // strafe
         double rx = -gamepad.right_stick_x;      // rotation
 
         double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-        double FLpower = (y - x + rx) / denominator;
-        double BLpower = (y + x + rx) / denominator;
+        double FLpower = (y + x + rx) / denominator;
+        double BLpower = (y - x + rx) / denominator;
         double FRpower = (y - x - rx) / denominator;
         double BRpower = (y + x - rx) / denominator;
 
