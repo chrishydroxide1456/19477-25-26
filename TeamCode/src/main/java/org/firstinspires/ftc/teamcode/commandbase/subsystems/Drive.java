@@ -1,50 +1,28 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
-public class Drive {
-    private final DcMotorEx FLmotor, FRmotor, BLmotor, BRmotor;
+import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.subsystems.Subsystem;
 
-    public Drive(HardwareMap hwMap) {
-        FLmotor = hwMap.get(DcMotorEx.class, "FLmotor");
-        FRmotor = hwMap.get(DcMotorEx.class, "FRmotor");
-        BLmotor = hwMap.get(DcMotorEx.class, "BLmotor");
-        BRmotor = hwMap.get(DcMotorEx.class, "BRmotor");
+import dev.nextftc.hardware.impl.MotorEx;
+import dev.nextftc.hardware.powerable.SetPower;
+import dev.nextftc.ftc.Gamepads;
+import dev.nextftc.hardware.driving.MecanumDriverControlled;
 
-        // Directions for OUTWARD mecanum rollers (diamond pattern)
-        FLmotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        BLmotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        FRmotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        BRmotor.setDirection(DcMotorSimple.Direction.REVERSE);
-    }
+public class Drive implements Subsystem {
+    public static final Drive INSTANCE = new Drive();
+    private Drive() { }
+    private final MotorEx FLmotor = new MotorEx("FLmotor");
+    private final MotorEx FRmotor = new MotorEx("FRmotor").reversed();
+    private final MotorEx BLmotor = new MotorEx("BLmotor").reversed();
+    private final MotorEx BRmotor = new MotorEx("BRmotor").reversed();
 
-    public void driveto(Gamepad gamepad) {
-        double y = -gamepad.left_stick_y;       // forward/back
-        double x =
-                gamepad.left_stick_x * 1.1;  // strafe
-        double rx = -gamepad.right_stick_x;      // rotation
 
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-        double FLpower = (y - x + rx) / denominator;
-        double BLpower = (y + x + rx) / denominator;
-        double FRpower = (y - x - rx) / denominator;
-        double BRpower = (y + x - rx) / denominator;
+    public final Command driverdrive = new MecanumDriverControlled(
+            FLmotor, FRmotor, BLmotor, BRmotor,
+            Gamepads.gamepad1().leftStickY(), Gamepads.gamepad1().leftStickX(), Gamepads.gamepad1().rightStickX()
+    ).requires(this);
 
-        FLmotor.setPower(FLpower);
-        FRmotor.setPower(FRpower);
-
-        BLmotor.setPower(BLpower);
-        BRmotor.setPower(BRpower);
-    }
-
-    public void drivewithpower(double power) {
-        FLmotor.setPower(1.0);
-        FRmotor.setPower(1.0);
-        BLmotor.setPower(1.0);
-        BRmotor.setPower(1.0);
-    }
+    //public final Command targetdrive = new Run
 
 }

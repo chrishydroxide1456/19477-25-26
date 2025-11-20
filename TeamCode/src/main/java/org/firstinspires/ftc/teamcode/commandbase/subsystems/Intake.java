@@ -1,39 +1,19 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.HardwareMap;
+import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.subsystems.Subsystem;
 
+import dev.nextftc.hardware.impl.MotorEx;
+import dev.nextftc.hardware.powerable.SetPower;
 
-public class Intake {
-    private final DcMotorEx inmotor;
+public class Intake implements Subsystem {
 
-    public Intake(HardwareMap hwMap) {
-        inmotor = hwMap.get(DcMotorEx.class, "inmotor");
-        inmotor.setDirection(DcMotorSimple.Direction.FORWARD);
-    }
+    public static final Intake INSTANCE = new Intake();
+    private Intake() {}
+    private final MotorEx inmotor = new MotorEx("inmotor");
 
-    public void dointake(Gamepad gamepad) {
-        double y = -gamepad.left_stick_y; // Remember, Y stick value is reversed
+    public final Command on = new SetPower(inmotor, 1.0);
+    public final Command off = new SetPower(inmotor, 0.0);
+    public final Command reverse = new SetPower(inmotor, -1.0);
 
-        // Denominator is the largest motor power (absolute value) or 1
-        // This ensures all the powers maintain the same ratio,
-        // but only if at least one is out of the range [-1, 1]
-        double inpower = y;
-
-        inmotor.setPower(inpower);
-    }
-
-
-//    public void intakeOn() {
-//        inmotor.setPower(-1.0);
-//    }
-//
-//    public void intakeOff() {
-//        inmotor.setPower(0.0);
-//    }
-//    public void intakeReverse() {
-//        inmotor.setPower(1.0);
-    }
+}

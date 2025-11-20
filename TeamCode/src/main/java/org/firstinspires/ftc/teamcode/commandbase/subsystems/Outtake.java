@@ -1,72 +1,38 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.targetVel;
 
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+import dev.nextftc.control.ControlSystem;
+import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.subsystems.Subsystem;
 
+import dev.nextftc.hardware.controllable.RunToVelocity;
+import dev.nextftc.hardware.impl.MotorEx;
+import dev.nextftc.hardware.impl.ServoEx;
+import dev.nextftc.hardware.positionable.SetPosition;
 
-public class Outtake {
+public class Outtake implements Subsystem {
 
-    private final DcMotorEx Tmotor, Bmotor;
-//    private final Servo gateServo;
-    private final RevBlinkinLedDriver led;
+    public static final Outtake INSTANCE = new Outtake();
+    private Outtake() {}
+    private final MotorEx Tmotor = new MotorEx("Tmotor").reversed();
+    private final MotorEx Bmotor = new MotorEx("Bmotor");
+    private final ServoEx gateServo = new ServoEx("gateServo");
 
-    public Outtake(HardwareMap hwMap) {
-        Tmotor = hwMap.get(DcMotorEx.class, "Tmotor");
-        Bmotor = hwMap.get(DcMotorEx.class, "Bmotor");
-        Tmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+    private final ControlSystem outcontroller = ControlSystem.builder()
+            .velPid(0.01, 0.0, 0.0) //need to tune
+            .basicFF(0.01, 0.02, 0.03) //need to tune
+            .build();
 
-        Tmotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        Bmotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//
-//        Tmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        Bmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//
-//        Tmotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(0.5, 0.1, 0.1, 0.5));
-//        Bmotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(0.5, 0.1, 0.1, 0.5));
+    public final Command on = new RunToVelocity(outcontroller, targetVel).requires(this); //add state requirements later
+    public final Command off = new RunToVelocity(outcontroller, 0.0).requires(this); //add state requirements later
 
+    public final Command open = new SetPosition(gateServo, 1.0).requires(this);
+    public final Command close = new SetPosition(gateServo, 0.0).requires(this);
 
-
-        led = hwMap.get(RevBlinkinLedDriver.class, "led");
-//        gateServo = hwMap.get(Servo.class, "gateServo");
-//        gateServo.setPosition(0.0);
-
+    public void periodic() {
+        Tmotor.setPower(outcontroller.calculate(Tmotor.getState()));
+        Bmotor.setPower(outcontroller.calculate(Bmotor.getState()));
     }
 
-    public void outtakeOn() {
-//        Tmotor.setVelocity(3000.0 * 28.0 / 60.0);
-//        Bmotor.setVelocity(3000.0 * 28.0 / 60.0);
-          Tmotor.setPower(0.35);
-          Bmotor.setPower(0.35);
-    }
-
-    public void outtakeOff() {
-        Tmotor.setVelocity(0.0);
-        Bmotor.setVelocity(0.0);
-    }
-
-//    public void closeGate() {
-//        gateServo.setPosition(0.0);
-//        }
-//
-//    public void openGate() {
-//        gateServo.setPosition(1.0);
-//        }
-
-    public void maxRPM() {
-        double TmotorVel = Tmotor.getVelocity();
-        double BmotorVel = Bmotor.getVelocity();
-        if (TmotorVel > 4800.0 * 28.0 / 60.0 && BmotorVel > 4800.0 * 28.0 / 60.0) {
-            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
-        } else {
-            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
-        }
-    }
-
-    }
-
+}
