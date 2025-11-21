@@ -5,28 +5,26 @@ import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 
+import org.firstinspires.ftc.teamcode.commandbase.Routines;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.LL;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Drive;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Odo;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Competition TeleOp")
 public class TeleOp extends NextFTCOpMode {
 
-    private Drive drive = Drive.INSTANCE;
-    private Intake intake = Intake.INSTANCE;
-    private Outtake outtake = Outtake.INSTANCE;
-    private LL limelight = LL.INSTANCE;
-    private Odo odometry = Odo.INSTANCE;
+    private final Drive drive = Drive.INSTANCE;
+    private final Intake intake = Intake.INSTANCE;
+    private final Outtake outtake = Outtake.INSTANCE;
+    private final LL limelight = LL.INSTANCE;
+    private final Odo odometry = Odo.INSTANCE;
 
+    @Override
     public void onInit() {
         addComponents(
-                SubsystemComponent(drive),
-                SubsystemComponent(intake),
-                SubsystemComponent(outtake),
-                SubsystemComponent(limelight),
-                SubsystemComponent(odometry),
+                SubsystemComponent(drive, intake, outtake, limelight, odometry),
                 BulkReadComponent,
                 BindingsComponent
         );
@@ -34,22 +32,51 @@ public class TeleOp extends NextFTCOpMode {
 
     @Override
     public void onBindings() {
-        // Drive controls - gamepad1 left stick for translation, right stick for rotation
-        run(() -> drive.driverdrive(gamepad1));
+        // Drive controls - continuous driving with gamepad1
+        run(() -> drive.driveWithGamepad(gamepad1));
         
-        // Intake controls - gamepad1
-        gamepad1.a.onPress(intake::on);
-        gamepad1.b.onPress(intake::off);
-        gamepad1.x.onPress(intake::reverse);
+        //region Gamepad1 - Driver Controls
         
-        // Outtake controls - gamepad2
-        gamepad2.a.onPress(outtake.on);
-        gamepad2.b.onPress(outtake.off);
-        gamepad2.x.onPress(outtake::open);
-        gamepad2.y.onPress(outtake::close);
+        // Intake controls using triggers
+        gamepad1.rightTrigger.asButton(value -> value > 0.5).whenBecomesTrue(() -> intake.start.schedule())
+                .whenBecomesFalse(() -> intake.slowOut.schedule());
         
-        // Limelight adjustment - can be triggered as needed
-        gamepad2.dpad_up.onPress(limelight::adjust);
+        gamepad1.leftTrigger.asButton(value -> value > 0.5).whenBecomesTrue(() -> intake.reverse.schedule())
+                .whenBecomesFalse(() -> intake.slowOut.schedule());
+        
+        // Quick intake actions
+        gamepad1.a.whenBecomesTrue(() -> intake.start.schedule());
+        gamepad1.b.whenBecomesTrue(() -> intake.stop.schedule());
+        gamepad1.x.whenBecomesTrue(() -> intake.reverse.schedule());
+        
+        // Limelight alignment
+        gamepad1.leftBumper.whenBecomesTrue(() -> Routines.limelightAdjust().schedule());
+        
+        // Emergency stop
+        gamepad1.back.whenBecomesTrue(() -> Routines.stopAll().schedule());
+        
+        //endregion
+        
+        //region Gamepad2 - Operator Controls
+        
+        // Outtake motor controls
+        gamepad2.a.whenBecomesTrue(() -> outtake.start.schedule());
+        gamepad2.b.whenBecomesTrue(() -> outtake.stop.schedule());
+        
+        // Outtake gate controls
+        gamepad2.x.whenBecomesTrue(() -> outtake.open.schedule());
+        gamepad2.y.whenBecomesTrue(() -> outtake.close.schedule());
+        
+        // Score sequence
+        gamepad2.rightBumper.whenBecomesTrue(() -> Routines.scoreSequence().schedule());
+        
+        // Intake sequence
+        gamepad2.leftBumper.whenBecomesTrue(() -> Routines.intakeSequence().schedule());
+        
+        // Eject sequence
+        gamepad2.back.whenBecomesTrue(() -> Routines.ejectSequence().schedule());
+        
+        //endregion
     }
 
 }

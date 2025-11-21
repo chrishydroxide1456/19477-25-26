@@ -32,12 +32,21 @@ public class LL implements Subsystem {
             if (fiducialresult != null && !fiducialresult.getTargets().isEmpty()) {
                 // TODO: Check for specific fiducial ID (24) - need to iterate through targets
                 headingAdjust = llresult.getTx();
-                targetVel = (0.1) * 30665.95/llresult.getTa(); //need to tune later. watch coach pratt vid
+                
+                // Prevent division by zero
+                double ta = llresult.getTa();
+                if (ta > 0.0) {
+                    targetVel = (0.1) * 30665.95 / ta; //need to tune later. watch coach pratt vid
+                } else {
+                    targetVel = 0.0;
+                }
             } else {
                 headingAdjust = 0.0;
+                targetVel = 0.0;
             }
         } else {
             headingAdjust = 0.0;
+            targetVel = 0.0;
         }
     }
 

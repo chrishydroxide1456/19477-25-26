@@ -6,42 +6,35 @@ import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 
+import org.firstinspires.ftc.teamcode.commandbase.AutoRoutines;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Drive;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.LL;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Odo;
 
-@Autonomous
+@Autonomous(name = "Basic Auto")
 public class Auto extends NextFTCOpMode {
 
-    private Drive drive = Drive.INSTANCE;
-    private Intake intake = Intake.INSTANCE;
-    private Outtake outtake = Outtake.INSTANCE;
-    private LL limelight = LL.INSTANCE;
-    private Odo odometry = Odo.INSTANCE;
+    private final Drive drive = Drive.INSTANCE;
+    private final Intake intake = Intake.INSTANCE;
+    private final Outtake outtake = Outtake.INSTANCE;
+    private final LL limelight = LL.INSTANCE;
+    private final Odo odometry = Odo.INSTANCE;
 
     @Override
     public void onInit() {
         addComponents(
-                SubsystemComponent(drive),
-                SubsystemComponent(intake),
-                SubsystemComponent(outtake),
-                SubsystemComponent(limelight),
-                SubsystemComponent(odometry),
+                SubsystemComponent(drive, intake, outtake, limelight, odometry),
                 BulkReadComponent
         );
     }
 
     @Override
-    public void onStart() {
-        // TODO: Add autonomous sequence here
-        // Example autonomous sequence:
-        // 1. Drive forward
-        // 2. Score preload
-        // 3. Navigate to samples
-        // 4. Collect and score samples
-        // 5. Park
+    public void onStartButtonPressed() {
+        // Schedule the basic autonomous routine
+        AutoRoutines.basicAutoRoutine().schedule();
     }
 
 }
+
