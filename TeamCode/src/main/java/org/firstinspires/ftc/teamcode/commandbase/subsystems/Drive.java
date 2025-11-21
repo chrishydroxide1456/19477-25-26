@@ -9,6 +9,9 @@ public class Drive implements Subsystem {
     public static final Drive INSTANCE = new Drive();
     private Drive() { }
     
+    // Motor directions - adjust .reversed() calls based on your robot's physical motor mounting
+    // Current setup: FR and BR reversed (common for many mecanum configurations)
+    // If robot doesn't drive correctly, try reversing different motors
     private final MotorEx frontLeftMotor = new MotorEx("FLmotor");
     private final MotorEx frontRightMotor = new MotorEx("FRmotor").reversed();
     private final MotorEx backLeftMotor = new MotorEx("BLmotor");

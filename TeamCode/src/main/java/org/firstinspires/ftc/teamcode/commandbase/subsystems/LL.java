@@ -20,8 +20,6 @@ public class LL implements Subsystem {
     
     public static double targetVel; //calculate when needed using AprilTag info
     public static double headingAdjust;
-    private GoBildaPinpointDriver pinpoint;
-    double distance;
 
     Limelight3A limelight;
 
