@@ -11,7 +11,14 @@ public class LL implements Subsystem {
 
     public static final LL INSTANCE = new LL();
     private LL() {}
-    public static double targetVel; //calculate when needed using Atag info
+    
+    // Target velocity calculation constant
+    // This constant is derived from the relationship between Limelight target area (ta)
+    // and desired shooter velocity. Formula: velocity = (VELOCITY_SCALE_FACTOR * DISTANCE_CONSTANT) / ta
+    // TODO: Tune this value based on field testing - see Coach Pratt's video for calibration method
+    private static final double DISTANCE_CONSTANT = 30665.95;
+    
+    public static double targetVel; //calculate when needed using AprilTag info
     public static double headingAdjust;
     private GoBildaPinpointDriver pinpoint;
     double distance;
@@ -36,7 +43,7 @@ public class LL implements Subsystem {
                 // Prevent division by zero
                 double ta = llresult.getTa();
                 if (ta > 0.0) {
-                    targetVel = (0.1) * 30665.95 / ta; //need to tune later. watch coach pratt vid
+                    targetVel = (0.1) * DISTANCE_CONSTANT / ta;
                 } else {
                     targetVel = 0.0;
                 }

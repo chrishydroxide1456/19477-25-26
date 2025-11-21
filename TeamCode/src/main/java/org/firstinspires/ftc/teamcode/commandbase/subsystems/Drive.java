@@ -22,6 +22,10 @@ public class Drive implements Subsystem {
         backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
+    // Constants for drive tuning
+    private static final double STRAFE_CORRECTION = 1.1;  // Correction factor for mecanum strafe imperfection
+    private static final double AUTO_ROTATION_DAMPING = 0.5;  // Reduce rotation sensitivity in autonomous
+
     /**
      * Mecanum drive controlled by gamepad
      * Left stick: translation (forward/back, strafe left/right)
@@ -29,7 +33,7 @@ public class Drive implements Subsystem {
      */
     public void driveWithGamepad(Gamepad gamepad) {
         double y = -gamepad.left_stick_y;  // Forward/backward
-        double x = gamepad.left_stick_x * 1.1;  // Strafe (with slight correction)
+        double x = gamepad.left_stick_x * STRAFE_CORRECTION;  // Strafe (with correction for mecanum imperfection)
         double rx = gamepad.right_stick_x;  // Rotation
 
         // Mecanum drive calculations
@@ -60,12 +64,22 @@ public class Drive implements Subsystem {
      * Manual drive control for autonomous (with rotation damping)
      */
     public void driveManual(double forward, double strafe, double rotate) {
-        double rotationDamping = 0.5;  // Reduce rotation sensitivity in auto
+        double frontLeftPower = forward + strafe + (rotate * AUTO_ROTATION_DAMPING);
+        double backLeftPower = forward - strafe + (rotate * AUTO_ROTATION_DAMPING);
+        double frontRightPower = forward - strafe - (rotate * AUTO_ROTATION_DAMPING);
+        double backRightPower = forward + strafe - (rotate * AUTO_ROTATION_DAMPING);
+
+        // Normalize powers to keep within [-1, 1] range
+        double maxPower = Math.max(Math.abs(frontLeftPower), 
+                          Math.max(Math.abs(backLeftPower),
+                          Math.max(Math.abs(frontRightPower), Math.abs(backRightPower))));
         
-        double frontLeftPower = forward + strafe + (rotate * rotationDamping);
-        double backLeftPower = forward - strafe + (rotate * rotationDamping);
-        double frontRightPower = forward - strafe - (rotate * rotationDamping);
-        double backRightPower = forward + strafe - (rotate * rotationDamping);
+        if (maxPower > 1.0) {
+            frontLeftPower /= maxPower;
+            backLeftPower /= maxPower;
+            frontRightPower /= maxPower;
+            backRightPower /= maxPower;
+        }
 
         frontLeftMotor.setPower(frontLeftPower);
         frontRightMotor.setPower(frontRightPower);
