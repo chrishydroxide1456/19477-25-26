@@ -6,8 +6,7 @@ import dev.nextftc.core.subsystems.Subsystem;
 
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.powerable.SetPower;
-import dev.nextftc.ftc.Gamepads;
-import dev.nextftc.hardware.driving.MecanumDriverControlled;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 public class Drive implements Subsystem {
     public static final Drive INSTANCE = new Drive();
@@ -18,11 +17,31 @@ public class Drive implements Subsystem {
     private final MotorEx BRmotor = new MotorEx("BRmotor").reversed();
 
 
-    public final Command driverdrive = new MecanumDriverControlled(
-            FLmotor, FRmotor, BLmotor, BRmotor,
-            Gamepads.gamepad1().leftStickY(), Gamepads.gamepad1().leftStickX(), Gamepads.gamepad1().rightStickX()
-    ).requires(this);
+    public void driverdrive(Gamepad gamepad) {
+        double y = -gamepad.left_stick_y;
+        double x = gamepad.left_stick_x;
+        double rx = -gamepad.right_stick_x;
+        double FLpower = (y + x + rx);
+        double BLpower = (y - x + rx);
+        double FRpower = (y - x - rx);
+        double BRpower = (y + x - rx);
 
-    //public final Command targetdrive = new Run
+        FLmotor.setPower(FLpower);
+        FRmotor.setPower(FRpower);
+        BLmotor.setPower(BLpower);
+        BRmotor.setPower(BRpower);
+    }
+
+    public void autodrive(double y, double x, double rx) {
+        double FLpower = (y + x + 0.03 * rx);
+        double BLpower = (y - x + 0.03 * rx);
+        double FRpower = (y - x - 0.03 * rx);
+        double BRpower = (y + x - 0.03 * rx);
+
+        FLmotor.setPower(FLpower);
+        FRmotor.setPower(FRpower);
+        BLmotor.setPower(BLpower);
+        BRmotor.setPower(BRpower);
+    }
 
 }

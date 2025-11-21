@@ -19,6 +19,9 @@ public class Outtake implements Subsystem {
     private final MotorEx Bmotor = new MotorEx("Bmotor");
     private final ServoEx gateServo = new ServoEx("gateServo");
 
+    public void initialize() {
+        gateServo.setPosition(0.0);
+    }
     private final ControlSystem outcontroller = ControlSystem.builder()
             .velPid(0.01, 0.0, 0.0) //need to tune
             .basicFF(0.01, 0.02, 0.03) //need to tune
@@ -27,8 +30,13 @@ public class Outtake implements Subsystem {
     public final Command on = new RunToVelocity(outcontroller, targetVel).requires(this); //add state requirements later
     public final Command off = new RunToVelocity(outcontroller, 0.0).requires(this); //add state requirements later
 
-    public final Command open = new SetPosition(gateServo, 1.0).requires(this);
-    public final Command close = new SetPosition(gateServo, 0.0).requires(this);
+    public void open() {
+        gateServo.setPosition(1.0);
+    }
+
+    public void close() {
+        gateServo.setPosition(0.0);
+    }
 
     public void periodic() {
         Tmotor.setPower(outcontroller.calculate(Tmotor.getState()));
