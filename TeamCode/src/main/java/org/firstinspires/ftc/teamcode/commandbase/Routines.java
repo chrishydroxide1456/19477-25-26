@@ -40,12 +40,12 @@ public class Routines {
      */
     public static Command scoreSequence() {
         return new SequentialGroup(
-                outtake.start,
+                outtake.on,
                 new Delay(1.0),  // Wait for outtake to spin up
                 outtake.open,
                 new Delay(0.5),  // Wait for element to exit
                 outtake.close,
-                outtake.stop
+                outtake.off
         );
     }
 
@@ -63,7 +63,7 @@ public class Routines {
     public static Command stopAll() {
         return new ParallelGroup(
                 intake.stop,
-                outtake.stop,
+                outtake.off,
                 new InstantCommand(() -> drive.stop())
         );
     }
