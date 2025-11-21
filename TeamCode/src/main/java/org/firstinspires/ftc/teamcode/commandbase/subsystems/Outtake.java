@@ -1,46 +1,54 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.targetVel;
-
-import dev.nextftc.control.ControlSystem;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.subsystems.Subsystem;
-
-import dev.nextftc.hardware.controllable.RunToVelocity;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
-import dev.nextftc.hardware.positionable.SetPosition;
 
+/**
+ * Simple outtake subsystem with 2 motors for shooting/scoring
+ * and a servo blocker to control game element release
+ */
 public class Outtake implements Subsystem {
 
     public static final Outtake INSTANCE = new Outtake();
     private Outtake() {}
-    private final MotorEx Tmotor = new MotorEx("Tmotor").reversed();
-    private final MotorEx Bmotor = new MotorEx("Bmotor");
+    
+    // Two motors for outtake mechanism
+    private final MotorEx topMotor = new MotorEx("Tmotor").reversed();
+    private final MotorEx bottomMotor = new MotorEx("Bmotor");
+    
+    // Servo blocker to control element release
     private final ServoEx gateServo = new ServoEx("gateServo");
 
+    @Override
     public void initialize() {
-        gateServo.setPosition(0.0);
-    }
-    private final ControlSystem outcontroller = ControlSystem.builder()
-            .velPid(0.01, 0.0, 0.0) //need to tune
-            .basicFF(0.01, 0.02, 0.03) //need to tune
-            .build();
-
-    public final Command on = new RunToVelocity(outcontroller, targetVel).requires(this); //add state requirements later
-    public final Command off = new RunToVelocity(outcontroller, 0.0).requires(this); //add state requirements later
-
-    public void open() {
-        gateServo.setPosition(1.0);
+        topMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        bottomMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        gateServo.setPosition(0.0);  // Start with blocker closed
     }
 
-    public void close() {
-        gateServo.setPosition(0.0);
-    }
-
-    public void periodic() {
-        Tmotor.setPower(outcontroller.calculate(Tmotor.getState()));
-        Bmotor.setPower(outcontroller.calculate(Bmotor.getState()));
-    }
+    // Motor control commands
+    public final Command on = new InstantCommand(() -> {
+        topMotor.setPower(1.0);
+        bottomMotor.setPower(1.0);
+    }).requires(this);
+    
+    public final Command off = new InstantCommand(() -> {
+        topMotor.setPower(0.0);
+        bottomMotor.setPower(0.0);
+    }).requires(this);
+    
+    public final Command reverse = new InstantCommand(() -> {
+        topMotor.setPower(-1.0);
+        bottomMotor.setPower(-1.0);
+    }).requires(this);
+    
+    // Servo blocker commands
+    public final Command open = new InstantCommand(() -> gateServo.setPosition(1.0)).requires(this);
+    public final Command close = new InstantCommand(() -> gateServo.setPosition(0.0)).requires(this);
 
 }
+
