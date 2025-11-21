@@ -25,15 +25,19 @@ public class LL implements Subsystem {
     }
 
     public void adjust() {
-        LLResult llresult = limelight.getLatestResult();;
-        LLResultTypes.FiducialResult fiducialresult = llresult.getFiducialResults(); //trying to get Atag ID
-        if (llresult.isValid() && llresult.getFiducialResults().equals(24)) { //need to add the enum stuff for red and blue
-            headingAdjust = llresult.getTx();
-            targetVel = (0.1) * 30665.95/llresult.getTa(); //need to tune later. watch coach pratt vid
-        }
-        else {
+        LLResult llresult = limelight.getLatestResult();
+        if (llresult != null && llresult.isValid()) {
+            LLResultTypes.FiducialResult fiducialresult = llresult.getFiducialResults();
+            // Check if we have fiducial results and if the target ID is 24
+            if (fiducialresult != null && !fiducialresult.getTargets().isEmpty()) {
+                // TODO: Check for specific fiducial ID (24) - need to iterate through targets
+                headingAdjust = llresult.getTx();
+                targetVel = (0.1) * 30665.95/llresult.getTa(); //need to tune later. watch coach pratt vid
+            } else {
+                headingAdjust = 0.0;
+            }
+        } else {
             headingAdjust = 0.0;
-
         }
     }
 
