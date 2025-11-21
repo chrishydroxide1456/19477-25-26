@@ -2,9 +2,42 @@
 
 Welcome!
 
-This module, TeamCode, is the place where you will write/paste the code for your team's
-robot controller App. This module is currently empty (a clean slate) but the
-process for adding OpModes is straightforward.
+This module, TeamCode, contains the code for your team's robot controller App. 
+This project uses the **NextFTC framework** (version 1.0.1) for a command-based robot architecture.
+
+## Project Structure
+
+### Subsystems (`commandbase/subsystems/`)
+All subsystems follow the singleton pattern and implement the NextFTC `Subsystem` interface:
+
+- **Drive.java** - Mecanum drive system with teleop and auto methods
+- **Intake.java** - Intake mechanism with on/off/reverse controls
+- **Outtake.java** - Outtake system with motors and gate servo
+- **LL.java** - Limelight vision system for AprilTag detection
+- **Odo.java** - Odometry using GoBilda Pinpoint driver
+
+### OpModes (`opmodes/`)
+- **TeleOp.java** - Driver-controlled mode with gamepad bindings
+- **Auto.java** - Autonomous mode (structure ready for sequences)
+
+## NextFTC Architecture
+
+All subsystems use the singleton pattern:
+```java
+public static final SubsystemName INSTANCE = new SubsystemName();
+private SubsystemName() {}
+```
+
+OpModes extend `NextFTCOpMode` and register components in `onInit()`:
+```java
+addComponents(
+    SubsystemComponent(subsystem),
+    BulkReadComponent,
+    BindingsComponent
+);
+```
+
+Command bindings are defined in `onBindings()` method for TeleOp controls.
 
 ## Creating your own OpModes
 
