@@ -10,18 +10,10 @@ public class Intake implements Subsystem {
 
     public static final Intake INSTANCE = new Intake();
     private Intake() {}
-    private final MotorEx inmotor = new MotorEx("inmotor");
+    private final MotorEx inmotor = new MotorEx("inmotor").reversed();
 
-    public void on() {
-        inmotor.setPower(1.0);
-    }
-
-    public void off() {
-        inmotor.setPower(0.0);
-    }
-
-    public void reverse() {
-        inmotor.setPower(-1.0);
-    }
+    public Command on = new SetPower(inmotor, 1.0).requires(this);
+    public Command off = new SetPower(inmotor, 0.0).requires(this);
+    public Command reverse = new SetPower(inmotor, -1.0).requires(this);
 
 }

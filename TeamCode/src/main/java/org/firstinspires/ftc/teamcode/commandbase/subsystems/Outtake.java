@@ -4,8 +4,12 @@ import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.targetVel
 
 import dev.nextftc.control.ControlSystem;
 import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.commands.delays.Delay;
+import dev.nextftc.core.commands.groups.ParallelGroup;
+import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.subsystems.Subsystem;
 
+import dev.nextftc.hardware.controllable.RunToPosition;
 import dev.nextftc.hardware.controllable.RunToVelocity;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
@@ -27,16 +31,47 @@ public class Outtake implements Subsystem {
             .basicFF(0.01, 0.02, 0.03) //need to tune
             .build();
 
-    public final Command on = new RunToVelocity(outcontroller, targetVel).requires(this); //add state requirements later
-    public final Command off = new RunToVelocity(outcontroller, 0.0).requires(this); //add state requirements later
+    //public Command on = new RunToVelocity(outcontroller, 500);
+    public Command on = new RunToVelocity(outcontroller, targetVel);
 
-    public void open() {
-        gateServo.setPosition(1.0);
-    }
+    //public Command off = new RunToVelocity(outcontroller, 0.0);
+    public Command off = new Command() {
 
-    public void close() {
-        gateServo.setPosition(0.0);
-    }
+        long t1 = System.currentTimeMillis();
+
+        @Override
+        public void update() {
+            long t2 = System.currentTimeMillis();
+            double dt = (double) (t2 - t1) /100;
+            t1 = t2;
+
+            if (Tmotor.getVelocity() > 0) {
+                targetVel = Tmotor.getVelocity() - 400 * dt; //400 = slow-down rate
+            }
+
+            new RunToVelocity(outcontroller, targetVel);
+        }
+
+        @Override
+        public boolean isDone() {
+            if (Bmotor.getVelocity() == 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        public void stop(boolean interrupted) {
+            new RunToVelocity(outcontroller, 0.0); //is if interrupted = true necessary?
+        }
+
+    };
+
+    public Command open = new SetPosition(gateServo, 1.0);
+    public Command close = new SetPosition(gateServo, 0.0);
+    public Command reverse = new RunToVelocity(outcontroller, -50).requires(this);
+
 
     public void periodic() {
         Tmotor.setPower(outcontroller.calculate(Tmotor.getState()));
