@@ -37,6 +37,9 @@ public class TeleOp extends NextFTCOpMode {
     public void onUpdate() {
         drive.driverdrive(gamepad1);
 
+        if (gamepad2.dpadLeftWasReleased()) {
+            ll.setID();
+        }
 
         button(() -> gamepad2.dpad_up)
                 .toggleOnBecomesTrue()

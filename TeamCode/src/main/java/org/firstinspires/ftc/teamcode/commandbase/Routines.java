@@ -23,22 +23,28 @@ public class Routines {
     private static Drive drive = Drive.INSTANCE;
 
 
-    public Command outSequence() {
+    public Command outSequence() { //currently is a little sketch for if robot isn't stationary when starting this sequence because adjusting only runs at the beginning
         return new ParallelGroup(
                 robotadjust(),
                 outtake.on,
-                new SequentialGroup(
-                        new Delay(3.0),
-                        outtake.open,
-                        new Delay(3.0),
-                        outtake.close,
-                        outtake.off
+                new ParallelGroup(
+                        new SequentialGroup(
+                                new Delay(3.0),
+                                outtake.open
+                        ),
+                        new SequentialGroup(
+                                new Delay(6.0),
+                                new ParallelGroup(
+                                        outtake.close,
+                                        outtake.off
+                                )
+                        )
                 )
         );
     }
     public Command robotadjust() {
         ll.adjust();
-        return new InstantCommand(() -> drive.autodrive(0, 0, headingAdjust)); //instantcommand might be a little sketch
+        return new InstantCommand(() -> drive.autodrive(0, 0, headingAdjust)); //instantcommand might be a little sketch. use a command instead of instantcommand?
     }
 
     public Command inSequence() {
