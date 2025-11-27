@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-import static org.firstinspires.ftc.teamcode.opmodes.TeleOp.drive;
-
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.commands.utility.LambdaCommand;
@@ -17,11 +15,11 @@ public class LL implements Subsystem {
 
     public static final LL INSTANCE = new LL();
     private LL() {}
-    public static double targetVel; //calculate when needed using Atag info
-    public static double headingAdjust;
-    public static double distance;
+    public static double targetVel = 0.0; //just initializing these values
+    public static double headingAdjust = 0.0;
+    public static double distance = 0.0;
     private GoBildaPinpointDriver pinpoint; //use later for auto
-    public static int ID;
+    public static int ID = 0;
 
     Limelight3A limelight;
 

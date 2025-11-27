@@ -17,15 +17,26 @@ import dev.nextftc.core.subsystems.Subsystem;
 
 public class Routines {
 
-    private static Intake intake = Intake.INSTANCE;
-    private static Outtake outtake = Outtake.INSTANCE;
-    private static LL ll = LL.INSTANCE;
-    private static Drive drive = Drive.INSTANCE;
+//    private Intake intake = Intake.INSTANCE;
+//    private Outtake outtake = Outtake.INSTANCE;
+//    private LL ll = LL.INSTANCE;
+//    private Drive drive = Drive.INSTANCE;
 
+    private Intake intake;
+    private Outtake outtake;
+    private LL ll;
+    private Drive drive;
+
+    public Routines(Intake intake, Outtake outtake, LL ll, Drive drive) {
+        this.intake = intake;
+        this.outtake = outtake;
+        this.ll = ll;
+        this.drive = drive;
+    }
 
     public Command outSequence() { //currently is a little sketch for if robot isn't stationary when starting this sequence because adjusting only runs at the beginning
         return new ParallelGroup(
-                robotadjust(),
+                robotadjust,
                 outtake.on,
                 new ParallelGroup(
                         new SequentialGroup(
@@ -42,11 +53,20 @@ public class Routines {
                 )
         );
     }
-    public Command robotadjust() {
-        ll.adjust();
-        return drive.autodrivecmd;
-        //drive.autodrive(0, 0, headingAdjust); //instantcommand might be a little sketch. use a command instead of instantcommand?
-    }
+    public Command robotadjust = new Command() {
+
+        @Override
+        public boolean isDone() {
+            return headingAdjust < 0.04; //like 2.3 degrees
+        }
+
+        @Override
+        public void update() {
+            ll.adjust();
+            drive.autodrivecmd.start();
+        }
+
+    };
 
     public Command inSequence() {
             return new ParallelGroup(

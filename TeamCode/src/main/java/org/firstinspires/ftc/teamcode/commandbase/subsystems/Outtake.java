@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.targetVel;
 
 import androidx.annotation.NonNull;
@@ -36,28 +35,24 @@ public class Outtake implements Subsystem {
     private Servo led;
 
 
-    public void initialize() {
-        gateServo.setPosition(0.0);
+    public void initialize(HardwareMap hardwareMap) { //why does it say is never used?
         led = hardwareMap.get(Servo.class, "led");
         spinServo1 = hardwareMap.get(CRServo.class, "spinServo1");
         spinServo2 = hardwareMap.get(CRServo.class, "spinServo2");
         gateServo = hardwareMap.get(Servo.class, "gateServo");
-
+        gateServo.setPosition(0.0);
     }
     private final ControlSystem outcontroller = ControlSystem.builder()
             .velPid(0.01, 0.0, 0.0) //need to tune
             .basicFF(0.01, 0.02, 0.03) //need to tune
             .build();
 
-    //public Command on = new RunToVelocity(outcontroller, 500);
-    //public Command on = new RunToVelocity(outcontroller, targetVel);
     public Command on = new Command() {
 
         @Override
         public void update() {
-            new RunToVelocity(outcontroller, targetVel);
 
-            if (Tmotor.getVelocity() > (targetVel - 50)) { //100 rpm = 46.67 tps
+            if (Tmotor.getVelocity() > (targetVel - 20)) { //100 rpm = 46.67 tps
                 led.setPosition(0.5);
             }
             else {
@@ -67,12 +62,12 @@ public class Outtake implements Subsystem {
 
         @Override
         public boolean isDone() {
-            return false; //i think this is okay
+            return false;
         }
 
     };
 
-    //public Command off = new RunToVelocity(outcontroller, 0.0);
+
     public Command off = new Command() {
         long t1 = System.currentTimeMillis();
 
@@ -86,20 +81,15 @@ public class Outtake implements Subsystem {
                 targetVel = Tmotor.getVelocity() - 400 * dt; //400 = slow-down rate
             }
 
-            new RunToVelocity(outcontroller, targetVel);
         }
 
         @Override
         public boolean isDone() {
-            return Bmotor.getVelocity() == 0;
+            return Bmotor.getVelocity() < 28.0; //like 60 rpm
         }
 
         public void stop(boolean interrupted) {
-            new RunToVelocity(outcontroller, 0.0); //just in case
-//            spinServo1.setPower(0.0);
-//            spinServo2.setPower(0.0);
-//            led.setPosition(0.0);
-//            gateServo.setPosition(0.0);
+            targetVel = 0.0; //just in case
         }
 
     };
@@ -107,24 +97,25 @@ public class Outtake implements Subsystem {
 
     public Command open = new Command() {
 
-        public void update() {
+        public void start() {
             gateServo.setPosition(0.2);
         }
 
         @Override
         public boolean isDone() {
-            return gateServo.getPosition() < 0.23;
+            return gateServo.getPosition() < 0.25;
         }
 
         public void stop(boolean interrupted) {
             spinServo1.setPower(1.0);
             spinServo2.setPower(1.0);
+            gateServo.setPosition(0.2);
         }
     };
 
     public Command close = new Command() {
 
-        public void update() {
+        public void start() {
             gateServo.setPosition(1.0);
             spinServo1.setPower(0.0);
             spinServo2.setPower(0.0);
@@ -140,6 +131,7 @@ public class Outtake implements Subsystem {
 
 
     public void periodic() {
+        new RunToVelocity(outcontroller, targetVel);
         Tmotor.setPower(outcontroller.calculate(Tmotor.getState()));
         Bmotor.setPower(outcontroller.calculate(Bmotor.getState()));
     }

@@ -40,25 +40,25 @@ public class Drive implements Subsystem {
         BRmotor.setPower(BRpower);
     }
 
-    private HolonomicMode RobotCentric;
-    public final Command Driverdrive = new MecanumDriverControlled(FLmotor, FRmotor, BLmotor, BRmotor,
-                Gamepads.gamepad1().leftStickY().negate(),
-                Gamepads.gamepad1().leftStickX(),
-                Gamepads.gamepad1().rightStickX(),
-                RobotCentric
-        );
-
-    public void autodrive(double y, double x, double rx) {
-        double FLpower = (y + x + 0.03 * rx);
-        double BLpower = (y - x + 0.03 * rx);
-        double FRpower = (y - x - 0.03 * rx);
-        double BRpower = (y + x - 0.03 * rx);
-
-        FLmotor.setPower(FLpower);
-        FRmotor.setPower(FRpower);
-        BLmotor.setPower(BLpower);
-        BRmotor.setPower(BRpower);
-    } //make this a class or command?
+//    private HolonomicMode RobotCentric;
+//    public final Command Driverdrive = new MecanumDriverControlled(FLmotor, FRmotor, BLmotor, BRmotor,
+//                Gamepads.gamepad1().leftStickY().negate(),
+//                Gamepads.gamepad1().leftStickX(),
+//                Gamepads.gamepad1().rightStickX(),
+//                RobotCentric
+//        );
+//
+//    public void autodrive(double y, double x, double rx) {
+//        double FLpower = (y + x + 0.03 * rx);
+//        double BLpower = (y - x + 0.03 * rx);
+//        double FRpower = (y - x - 0.03 * rx);
+//        double BRpower = (y + x - 0.03 * rx);
+//
+//        FLmotor.setPower(FLpower);
+//        FRmotor.setPower(FRpower);
+//        BLmotor.setPower(BLpower);
+//        BRmotor.setPower(BRpower);
+//    } //make this a class or command?
 
 
     private final ControlSystem drivecontroller = ControlSystem.builder()
@@ -67,7 +67,6 @@ public class Drive implements Subsystem {
             .build();
 
     public Command autodrivecmd = new Command() {
-
 
         public void update() {
 

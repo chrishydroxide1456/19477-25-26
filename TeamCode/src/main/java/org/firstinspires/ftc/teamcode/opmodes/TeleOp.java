@@ -20,26 +20,30 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class TeleOp extends NextFTCOpMode {
-    public static Intake intake = Intake.INSTANCE;
-    public static Outtake outtake = Outtake.INSTANCE;
-    public static LL ll = LL.INSTANCE;
-    public static Drive drive = Drive.INSTANCE;
-    public static Routines routines = new Routines();
+//    public Intake intake = Intake.INSTANCE;
+//    public Outtake outtake = Outtake.INSTANCE;
+//    public LL ll = LL.INSTANCE;
+//    public Drive drive = Drive.INSTANCE;
+//    public Routines routines = new Routines();
+    private Intake intake;
+    private Outtake outtake;
+    private LL ll;
+    private Drive drive;
+    private Routines routines;
 
     public void onInit() {
+        intake = Intake.INSTANCE;
+        outtake.initialize(hardwareMap);
+        outtake = Outtake.INSTANCE;
+        ll = LL.INSTANCE;
+        drive = Drive.INSTANCE;
+        routines = new Routines(intake, outtake, ll, drive);
+
         addComponents(
                 new SubsystemComponent(ll, drive, outtake, intake),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
         );
-    }
-
-    public void onUpdate() {
-        drive.driverdrive(gamepad1);
-
-        if (gamepad2.dpadLeftWasReleased()) {
-            ll.setID();
-        }
 
         button(() -> gamepad2.dpad_up)
                 .toggleOnBecomesTrue()
@@ -55,10 +59,18 @@ public class TeleOp extends NextFTCOpMode {
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> routines.outSequence().start())
                 .whenBecomesFalse(() -> new ParallelGroup(
-                        outtake.close,
-                        outtake.off
-                )
+                                outtake.close,
+                                outtake.off
+                        ).start()
                 );
+
+    }
+
+    public void onUpdate() {
+        drive.driverdrive(gamepad1);
+        if (gamepad2.dpadLeftWasReleased()) {
+            ll.setID();
+        }
 
     }
 
