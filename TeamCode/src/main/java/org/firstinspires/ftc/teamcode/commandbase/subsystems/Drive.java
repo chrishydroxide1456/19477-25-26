@@ -2,14 +2,16 @@ package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
 
 
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAdjust;
+
+import dev.nextftc.control.ControlSystem;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.subsystems.Subsystem;
 
 import dev.nextftc.ftc.Gamepads;
-import dev.nextftc.hardware.driving.DriverControlledCommand;
+import dev.nextftc.hardware.controllable.RunToVelocity;
 import dev.nextftc.hardware.driving.HolonomicMode;
 import dev.nextftc.hardware.driving.MecanumDriverControlled;
-import dev.nextftc.hardware.driving.RobotCentric;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.powerable.SetPower;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -57,5 +59,35 @@ public class Drive implements Subsystem {
         BLmotor.setPower(BLpower);
         BRmotor.setPower(BRpower);
     } //make this a class or command?
+
+
+    private final ControlSystem drivecontroller = ControlSystem.builder()
+            .velPid(0.01, 0.0, 0.0) //need to tune
+            .basicFF(0.01, 0.02, 0.03) //need to tune
+            .build();
+
+    public Command autodrivecmd = new Command() {
+
+
+        public void update() {
+
+            new RunToVelocity(drivecontroller, 0.03*headingAdjust);
+
+            new SetPower(FLmotor, drivecontroller.calculate(FLmotor.getState()));
+            new SetPower(FRmotor, -drivecontroller.calculate(FRmotor.getState()));
+            new SetPower(BLmotor, drivecontroller.calculate(BLmotor.getState()));
+            new SetPower(BRmotor, -drivecontroller.calculate(BRmotor.getState()));
+
+        }
+
+
+        @Override
+        public boolean isDone() {
+            return headingAdjust < 0.04; //like 2.3 degrees of error
+        }
+
+    };
+
+
 
 }

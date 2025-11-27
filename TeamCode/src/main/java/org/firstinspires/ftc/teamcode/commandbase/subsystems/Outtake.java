@@ -19,8 +19,10 @@ import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.impl.ServoEx;
 import dev.nextftc.hardware.positionable.SetPosition;
 import dev.nextftc.hardware.powerable.SetPower;
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 public class Outtake implements Subsystem {
 
@@ -28,15 +30,19 @@ public class Outtake implements Subsystem {
     private Outtake() {}
     private final MotorEx Tmotor = new MotorEx("Tmotor").reversed();
     private final MotorEx Bmotor = new MotorEx("Bmotor");
-    private final ServoEx gateServo = new ServoEx("gateServo");
-    private final CRServoEx spinServo1 = new CRServoEx("spinServo1");
-    private final CRServoEx spinServo2 = new CRServoEx("spinServo2");
-    private RevBlinkinLedDriver led;
+    private Servo gateServo;
+    private CRServo spinServo1;
+    private CRServo spinServo2;
+    private Servo led;
 
 
     public void initialize() {
         gateServo.setPosition(0.0);
-        led = hardwareMap.get(RevBlinkinLedDriver.class, "led");
+        led = hardwareMap.get(Servo.class, "led");
+        spinServo1 = hardwareMap.get(CRServo.class, "spinServo1");
+        spinServo2 = hardwareMap.get(CRServo.class, "spinServo2");
+        gateServo = hardwareMap.get(Servo.class, "gateServo");
+
     }
     private final ControlSystem outcontroller = ControlSystem.builder()
             .velPid(0.01, 0.0, 0.0) //need to tune
@@ -50,14 +56,12 @@ public class Outtake implements Subsystem {
         @Override
         public void update() {
             new RunToVelocity(outcontroller, targetVel);
-            new SetPower(spinServo1, 0.1); //need to tune later
-            new SetPower(spinServo2, 0.1);
 
             if (Tmotor.getVelocity() > (targetVel - 50)) { //100 rpm = 46.67 tps
-                led.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);;
+                led.setPosition(0.5);
             }
             else {
-                led.setPattern(RevBlinkinLedDriver.BlinkinPattern.RED);
+                led.setPosition(0.3);
             }
         }
 
@@ -83,8 +87,6 @@ public class Outtake implements Subsystem {
             }
 
             new RunToVelocity(outcontroller, targetVel);
-            new SetPower(spinServo1, 0.0); //slew the CRServos too?
-            new SetPower(spinServo2, 0.0);
         }
 
         @Override
@@ -94,15 +96,46 @@ public class Outtake implements Subsystem {
 
         public void stop(boolean interrupted) {
             new RunToVelocity(outcontroller, 0.0); //just in case
-            new SetPower(spinServo1, 0.0);
-            new SetPower(spinServo2, 0.0);
-            led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
+//            spinServo1.setPower(0.0);
+//            spinServo2.setPower(0.0);
+//            led.setPosition(0.0);
+//            gateServo.setPosition(0.0);
         }
 
     };
 
-    public Command open = new SetPosition(gateServo, 0.7);
-    public Command close = new SetPosition(gateServo, 0.0);
+
+    public Command open = new Command() {
+
+        public void update() {
+            gateServo.setPosition(0.2);
+        }
+
+        @Override
+        public boolean isDone() {
+            return gateServo.getPosition() < 0.23;
+        }
+
+        public void stop(boolean interrupted) {
+            spinServo1.setPower(1.0);
+            spinServo2.setPower(1.0);
+        }
+    };
+
+    public Command close = new Command() {
+
+        public void update() {
+            gateServo.setPosition(1.0);
+            spinServo1.setPower(0.0);
+            spinServo2.setPower(0.0);
+        }
+
+        @Override
+        public boolean isDone() {
+            return gateServo.getPosition() > 0.95;
+        }
+    };
+
     public Command reverse = new RunToVelocity(outcontroller, -56).requires(this);
 
 

@@ -43,8 +43,8 @@ public class LL implements Subsystem {
         if (!llresult.getFiducialResults().isEmpty()) {
             LLResultTypes.FiducialResult fidresult = llresult.getFiducialResults().get(0); //fiducialresult index is determined by Ta, should be fine
             if (fidresult.getFiducialId() == ID) {
-                headingAdjust = llresult.getTx();
-                distance = (29.502 - cameraheight)/(Math.tan(cammountangle + llresult.getTy())); //verify 29.502 = apriltag center height, need to find cameraheight and cammountangle later. also, adjust so that it is the point of release rather than actual LL location
+                headingAdjust = llresult.getTx()*Math.PI/180;
+                distance = (29.502 - 11.5)/(Math.tan(100*Math.PI/180 + llresult.getTy()*Math.PI/180)) + 2.5; //29.502 = atag, 11.5 = ll, 2.5 = dist btwn ll and exit point
                 targetVel = gettargetVel(distance); //i hope this works
             }
         }
@@ -56,13 +56,13 @@ public class LL implements Subsystem {
     }
 
     public double gettargetVel(double Distance) {
-        double Hgoal = ;
-        double Hshooter = ;
-        double launchangle = ;
-        double flywheelR = ;
+        double Hgoal = 47; //units are inches
+        double Hshooter = 14.5;
+        double launchangle = 50*Math.PI/180;
+        double flywheelR = 2;
 
         double Vball = Math.sqrt((9.8*Distance*Distance)/(2*Math.cos(launchangle)*(Distance*Math.tan(launchangle)-(Hgoal-Hshooter))));
-        double Vwheel = Vball/ ;
+        double Vwheel = Vball/0.8; //some constant, tune later
         return (Vwheel/(2*Math.PI*flywheelR));
     }
 

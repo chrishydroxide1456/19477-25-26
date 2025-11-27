@@ -44,7 +44,8 @@ public class Routines {
     }
     public Command robotadjust() {
         ll.adjust();
-        return new InstantCommand(() -> drive.autodrive(0, 0, headingAdjust)); //instantcommand might be a little sketch. use a command instead of instantcommand?
+        return drive.autodrivecmd;
+        //drive.autodrive(0, 0, headingAdjust); //instantcommand might be a little sketch. use a command instead of instantcommand?
     }
 
     public Command inSequence() {
