@@ -15,7 +15,7 @@ public class LL implements Subsystem {
     public static double targetVel;
     public static double headingAdjust;
     public static float distance;
-    public static int ID;
+    public static int ID;  // Set this in teleop to filter tags!
     public static boolean tagVisible = false;
 
     private Limelight3A limelight;
@@ -60,52 +60,71 @@ public class LL implements Subsystem {
         long currentTime = System.currentTimeMillis();
 
         if (llresult != null && llresult.getFiducialResults() != null && !llresult.getFiducialResults().isEmpty()) {
-            tagVisible = true;
 
-            LLResultTypes.FiducialResult fidresult = llresult.getFiducialResults().get(0);
-            lastDetectionTime = currentTime;
-
-            // Horizontal aiming
-            headingAdjust = llresult.getTx();
-
-            // Raw distance calculation
-            double ty = llresult.getTy();
-            double angleToGoalDeg = LIMELIGHT_MOUNT_ANGLE_DEG + ty;
-            double angleToGoalRad = Math.toRadians(angleToGoalDeg);
-
-            float rawDistance = 36.0f;
-            if (Math.abs(Math.tan(angleToGoalRad)) > 1e-6) {
-                double distInches = (GOAL_HEIGHT_IN - LIMELIGHT_HEIGHT_IN) / Math.tan(angleToGoalRad);
-                if (!Double.isNaN(distInches) && !Double.isInfinite(distInches) && distInches > 0) {
-                    rawDistance = (float) Math.max(12.0, Math.min(120.0, distInches));
+            // **KEY CHANGE**: Find the tag that matches our target ID
+            LLResultTypes.FiducialResult targetTag = null;
+            for (LLResultTypes.FiducialResult fidResult : llresult.getFiducialResults()) {
+                if (fidResult.getFiducialId() == ID) {
+                    targetTag = fidResult;
+                    break;
                 }
             }
 
-            // Smooth distance
-            smoothedDistance = smoothDistance(rawDistance, smoothedDistance);
-            distance = smoothedDistance;
+            // Only process if we found our specific tag
+            if (targetTag != null) {
+                tagVisible = true;
+                lastDetectionTime = currentTime;
 
-            // Velocity based on smoothed distance
-            double calculatedVel = gettargetVel(distance);
-            targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                    ? calculatedVel : 800.0;
+                // Horizontal aiming
+                headingAdjust = llresult.getTx();
+
+                // Raw distance calculation
+                double ty = llresult.getTy();
+                double angleToGoalDeg = LIMELIGHT_MOUNT_ANGLE_DEG + ty;
+                double angleToGoalRad = Math.toRadians(angleToGoalDeg);
+
+                float rawDistance = 36.0f;
+                if (Math.abs(Math.tan(angleToGoalRad)) > 1e-6) {
+                    double distInches = (GOAL_HEIGHT_IN - LIMELIGHT_HEIGHT_IN) / Math.tan(angleToGoalRad);
+                    if (!Double.isNaN(distInches) && !Double.isInfinite(distInches) && distInches > 0) {
+                        rawDistance = (float) Math.max(12.0, Math.min(120.0, distInches));
+                    }
+                }
+
+                // Smooth distance
+                smoothedDistance = smoothDistance(rawDistance, smoothedDistance);
+                distance = smoothedDistance;
+
+                // Velocity based on smoothed distance
+                double calculatedVel = gettargetVel(distance);
+                targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
+                        ? calculatedVel : 800.0;
+
+            } else {
+                // Camera sees tags, but NOT our target ID - treat as no detection
+                handleNoDetection(currentTime);
+            }
 
         } else {
-            // No direct detection
-            if (currentTime - lastDetectionTime < DETECTION_TIMEOUT_MS) {
-                // Coasting on last good measurement
-                tagVisible = true;
-                distance = smoothedDistance;
-                headingAdjust = 0.0;
-                targetVel = gettargetVel(distance);
-            } else {
-                // Tag actually lost
-                tagVisible = false;
-                headingAdjust = 0.0;
-                targetVel = 0.0;
-                distance = 0.0f;
-                smoothedDistance = 36.0f;
-            }
+            // No tags visible at all
+            handleNoDetection(currentTime);
+        }
+    }
+
+    private void handleNoDetection(long currentTime) {
+        if (currentTime - lastDetectionTime < DETECTION_TIMEOUT_MS) {
+            // Coasting on last good measurement
+            tagVisible = true;
+            distance = smoothedDistance;
+            headingAdjust = 0.0;
+            targetVel = gettargetVel(distance);
+        } else {
+            // Tag actually lost
+            tagVisible = false;
+            headingAdjust = 0.0;
+            targetVel = 0.0;
+            distance = 0.0f;
+            smoothedDistance = 36.0f;
         }
     }
 
@@ -119,7 +138,7 @@ public class LL implements Subsystem {
         double Hshooter = LIMELIGHT_HEIGHT_IN / 39.37;  // inches → meters
         double Hgoal = GOAL_HEIGHT_IN / 39.37;           // inches → meters
         double launchangle = Math.toRadians(50);
-        double flywheelR = 2.0 / 39.37;                  // 2 inches → meters (FIXED!)
+        double flywheelR = 2.0 / 39.37;                  // 2 inches → meters
 
         double DistanceMeters = Distance / 39.37;
         double heightDiff = Hgoal - Hshooter;
@@ -138,7 +157,7 @@ public class LL implements Subsystem {
         double Vball = Math.sqrt(numerator / (2.0 * cosAngle * cosAngle * denom));
 
         // Account for energy loss (flywheel to ball efficiency)
-        double Vwheel = Vball / 0.43;
+        double Vwheel = Vball / 0.55;
 
         // Convert linear velocity (m/s) to RPM
         double rpm = (Vwheel / (2.0 * Math.PI * flywheelR)) * 60.0;

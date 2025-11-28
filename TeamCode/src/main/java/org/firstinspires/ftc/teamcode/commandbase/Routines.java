@@ -12,12 +12,12 @@ public class Routines {
 
     // Timing constants
     private static final long FLYWHEEL_SPINUP_MS = 750;
-    private static final long INTAKE_REVERSE_START_MS = 650;
-    private static final long GATE_OPEN_MS = 750;
-    private static final long INTAKE_FORWARD_START_MS = 1000;
+    private static final long INTAKE_REVERSE_START_MS = 1450;
+    private static final long GATE_OPEN_MS = 1300;
+    private static final long INTAKE_FORWARD_START_MS = 1700;
     private static final long SEQUENCE_DURATION_MS = 3250;
     private static final double HEADING_TOLERANCE = 0.7;
-    private static final long ALIGN_TIMEOUT_MS = 1500;
+    private static final long ALIGN_TIMEOUT_MS = 3000;
 
     public Routines(Intake intake, Outtake outtake, LL ll, Drive drive) {
         this.intake = intake;

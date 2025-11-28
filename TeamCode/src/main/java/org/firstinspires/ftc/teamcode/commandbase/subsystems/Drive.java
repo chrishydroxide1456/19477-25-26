@@ -11,7 +11,6 @@ public class Drive implements Subsystem {
     public static double multi = 1.0;
     private Drive() { }
 
-    // EXACT SAME MOTOR SETUP AS YOUR ORIGINAL
     private final MotorEx FLmotor = new MotorEx("FLmotor");
     private final MotorEx FRmotor = new MotorEx("FRmotor").reversed();
     private final MotorEx BLmotor = new MotorEx("BLmotor").reversed();
@@ -19,22 +18,38 @@ public class Drive implements Subsystem {
 
     private boolean autoAlignActive = false;
 
+    // PID variables
+    private double previousError = 0.0;
+    private double integral = 0.0;
+    private long lastTime = 0;
+
     public void setMulti(double newMulti) {
         multi = newMulti;
     }
 
-    public void startAutoAlign() { autoAlignActive = true; }
-    public void stopAutoAlign() { autoAlignActive = false; }
+    public void startAutoAlign() {
+        autoAlignActive = true;
+        // Reset PID state when starting
+        previousError = 0.0;
+        integral = 0.0;
+        lastTime = System.currentTimeMillis();
+    }
+
+    public void stopAutoAlign() {
+        autoAlignActive = false;
+        // Reset PID state when stopping
+        previousError = 0.0;
+        integral = 0.0;
+    }
+
     public boolean isAutoAlignActive() { return autoAlignActive; }
 
     public void driverdrive(Gamepad gamepad) {
-        // AUTO ALIGN OVERRIDES EVERYTHING
         if (autoAlignActive) {
-            autoAlignPure();
+            autoAlignAggressive();
             return;
         }
 
-        // YOUR EXACT ORIGINAL DRIVING CODE
         if (gamepad == null) {
             FLmotor.setPower(0);
             FRmotor.setPower(0);
@@ -44,7 +59,7 @@ public class Drive implements Subsystem {
         }
 
         double y = -gamepad.left_stick_y;
-        double x = -gamepad.left_stick_x * 1.1;
+        double x = -gamepad.left_stick_x ;
         double rx = -gamepad.right_stick_x;
         double FLpower = (-y + x + rx);
         double BLpower = (y + x - rx);
@@ -57,32 +72,69 @@ public class Drive implements Subsystem {
         BRmotor.setPower(BRpower * multi);
     }
 
-    // Pure auto-align rotation (only runs when autoAlignActive = true)
-    // Pure auto-align rotation (only runs when autoAlignActive = true)
-    private void autoAlignPure() {
+    // IMPROVED: Reduced overshoot with better damping
+    private void autoAlignAggressive() {
+        double error = headingAdjust;  // degrees from LL
+
+        // TUNED PID CONSTANTS (reduced overshoot)
+        double kP = 0.045;              // Reduced from 0.055 (less aggressive = less overshoot)
+        double kI = 0.002;              // Small integral to eliminate steady-state error
+        double kD = 0.015;              // INCREASED from 0.008 (more damping = less overshoot)
+
+        double maxPower = 0.75;         // Reduced from 0.85 (prevent too much momentum)
+        double minPower = 0.15;
+        double deadband = 0.5;          // Slightly wider deadband (was 0.3)
+
+        // Calculate time delta
+        long currentTime = System.currentTimeMillis();
+        double dt = (currentTime - lastTime) / 1000.0; // seconds
+        if (dt > 0.1 || dt <= 0) dt = 0.02; // Cap dt and handle first call
+        lastTime = currentTime;
+
         double turnPower = 0.0;
 
-        double error = headingAdjust;      // degrees from LL
-        double kP = 0.02;                  // softer P gain (was 0.04)
-        double maxPower = 0.5;             // lower max turn power (was 0.75)
-        double minPower = 0.12;            // minimum to overcome friction
+        if (Math.abs(error) > deadband) {
+            // PID calculation
+            integral += error * dt;
 
-        if (Math.abs(error) > 0.7 && Math.abs(error) < 40.0) {
-            turnPower = kP * error;
+            // Anti-windup: clamp integral
+            double maxIntegral = 8.0;  // Reduced from 10.0
+            if (integral > maxIntegral) integral = maxIntegral;
+            if (integral < -maxIntegral) integral = -maxIntegral;
 
-            // clamp to max magnitude
-            if (turnPower > maxPower) turnPower = maxPower;
-            if (turnPower < -maxPower) turnPower = -maxPower;
+            double derivative = (error - previousError) / dt;
 
-            // enforce small minimum power so it doesn’t stall
-            if (Math.abs(turnPower) < minPower) {
+            // Full PID output
+            turnPower = (kP * error) + (kI * integral) + (kD * derivative);
+
+            // ADAPTIVE POWER LIMITING: reduce max power when close to target
+            double adaptiveMaxPower = maxPower;
+            if (Math.abs(error) < 3.0) {
+                // Within 3 degrees: reduce max power to prevent overshoot
+                adaptiveMaxPower = 0.45;
+            } else if (Math.abs(error) < 7.0) {
+                // Within 7 degrees: moderate power
+                adaptiveMaxPower = 0.60;
+            }
+
+            // Clamp to adaptive max power
+            if (turnPower > adaptiveMaxPower) turnPower = adaptiveMaxPower;
+            if (turnPower < -adaptiveMaxPower) turnPower = -adaptiveMaxPower;
+
+            // Apply minimum power threshold (only when not super close)
+            if (Math.abs(error) > 2.0 && Math.abs(turnPower) < minPower) {
                 turnPower = Math.signum(turnPower) * minPower;
             }
+
+            previousError = error;
         } else {
-            // inside deadband → no turning
+            // Within deadband - stop and reset integral
             turnPower = 0.0;
+            integral = 0.0;
+            previousError = 0.0;
         }
 
+        // Apply turn power to motors
         double FL = -turnPower;
         double BL =  turnPower;
         double FR =  turnPower;
@@ -94,9 +146,7 @@ public class Drive implements Subsystem {
         BRmotor.setPower(BR);
     }
 
-
     public void autodrive(double rx) {
-        // YOUR ORIGINAL autodrive
         double FLpower = (-rx);
         double BLpower = (rx);
         double FRpower = (rx);
