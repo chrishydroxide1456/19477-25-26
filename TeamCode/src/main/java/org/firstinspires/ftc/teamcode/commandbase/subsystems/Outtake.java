@@ -38,7 +38,7 @@ public class Outtake implements Subsystem {
     }
 
     public void reset() {
-        gateServo.setPosition(1.0);
+        gateServo.setPosition(0.95);
         Tmotor.setPower(0);
         Bmotor.setPower(0);
         spinServo1.setPower(0);
@@ -90,8 +90,8 @@ public class Outtake implements Subsystem {
 
     public Command close = new Command() {
         private long start = 0;
-        @Override public void start() { start = System.currentTimeMillis(); gateServo.setPosition(0.97); }
-        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo.setPosition(1.0); }
+        @Override public void start() { start = System.currentTimeMillis(); gateServo.setPosition(0.93); }
+        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo.setPosition(0.95); }
         @Override public boolean isDone() { return true; }
     };
 }

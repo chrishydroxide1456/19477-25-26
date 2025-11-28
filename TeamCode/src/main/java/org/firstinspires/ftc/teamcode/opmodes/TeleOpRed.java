@@ -63,7 +63,7 @@ public class TeleOpRed extends NextFTCOpMode {
         // A = intake toggle
         button(() -> gamepad2.x).toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> intake.reverse.schedule())
-                .whenBecomesFalse(() -> intake.off.schedule());
+                .whenBecomesFalse(() -> routines.stopReverseSequence().schedule());
     }
 
     @Override

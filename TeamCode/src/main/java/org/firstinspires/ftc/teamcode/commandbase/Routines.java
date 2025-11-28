@@ -12,9 +12,9 @@ public class Routines {
 
     // Timing constants
     private static final long FLYWHEEL_SPINUP_MS = 750;
-    private static final long INTAKE_REVERSE_START_MS = 500;
+    private static final long INTAKE_REVERSE_START_MS = 650;
     private static final long GATE_OPEN_MS = 750;
-    private static final long INTAKE_FORWARD_START_MS = 1250;
+    private static final long INTAKE_FORWARD_START_MS = 1000;
     private static final long SEQUENCE_DURATION_MS = 3250;
     private static final double HEADING_TOLERANCE = 0.7;
     private static final long ALIGN_TIMEOUT_MS = 1500;
@@ -83,8 +83,8 @@ public class Routines {
                 // Reverse intake at 500ms AND spin servos backward
                 if (elapsed > INTAKE_REVERSE_START_MS && !intakeReversed) {
                     Intake.INSTANCE.revmoving.schedule();
-                    outtake.spinServo1.setPower(-0.5);
-                    outtake.spinServo2.setPower(-0.5);
+                    outtake.spinServo1.setPower(-1.0);
+                    outtake.spinServo2.setPower(-1.0);
                     intakeReversed = true;
                 }
 
@@ -97,8 +97,8 @@ public class Routines {
                 // Start intake forward at 1250ms AND spin servos forward
                 if (elapsed > INTAKE_FORWARD_START_MS && !intakeForwarded) {
                     Intake.INSTANCE.onmoving.schedule();
-                    outtake.spinServo1.setPower(0.7);
-                    outtake.spinServo2.setPower(0.7);
+                    outtake.spinServo1.setPower(1.0);
+                    outtake.spinServo2.setPower(1.0);
                     intakeForwarded = true;
                 }
 
@@ -159,7 +159,7 @@ public class Routines {
 
             @Override
             public boolean isDone() {
-                return false;  // Changed to false so update() keeps running
+                return false;  // Keep running
             }
         };
     }
@@ -171,8 +171,27 @@ public class Routines {
                 drive.setMulti(1.0);
                 intake.keeping.schedule();
                 // Stop spin servos
-                outtake.spinServo1.setPower(-0.2);
-                outtake.spinServo2.setPower(-0.2);
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
+            }
+
+            @Override
+            public boolean isDone() {
+                return true;
+            }
+        };
+    }
+
+    // NEW: Stop reverse sequence
+    public Command stopReverseSequence() {
+        return new Command() {
+            @Override
+            public void start() {
+                drive.setMulti(1.0);
+                intake.off.schedule();
+                // Stop spin servos
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
             }
 
             @Override
