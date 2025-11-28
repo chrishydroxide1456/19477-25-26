@@ -1,17 +1,12 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-
-
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAdjust;
 
 import dev.nextftc.control.ControlSystem;
+import dev.nextftc.control.KineticState;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.subsystems.Subsystem;
 
-import dev.nextftc.ftc.Gamepads;
-import dev.nextftc.hardware.controllable.RunToVelocity;
-import dev.nextftc.hardware.driving.HolonomicMode;
-import dev.nextftc.hardware.driving.MecanumDriverControlled;
 import dev.nextftc.hardware.impl.MotorEx;
 import dev.nextftc.hardware.powerable.SetPower;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -25,14 +20,14 @@ public class Drive implements Subsystem {
     private final MotorEx BRmotor = new MotorEx("BRmotor").reversed();
 
 
-    public void driverdrive(Gamepad gamepad) {
+    public void driverdrive(Gamepad gamepad) { //add multiplier later
         double y = -gamepad.left_stick_y;
-        double x = gamepad.left_stick_x * 1.1;
+        double x = -gamepad.left_stick_x * 1.1;
         double rx = -gamepad.right_stick_x;
-        double FLpower = (y - x + rx);
-        double BLpower = (y + x + rx);
-        double FRpower = (y - x - rx);
-        double BRpower = (y + x - rx);
+        double FLpower = (-y + x + rx);
+        double BLpower = (y + x - rx);
+        double FRpower = (-y - x - rx);
+        double BRpower = (y - x + rx);
 
         FLmotor.setPower(FLpower);
         FRmotor.setPower(FRpower);
@@ -48,45 +43,47 @@ public class Drive implements Subsystem {
 //                RobotCentric
 //        );
 //
-//    public void autodrive(double y, double x, double rx) {
-//        double FLpower = (y + x + 0.03 * rx);
-//        double BLpower = (y - x + 0.03 * rx);
-//        double FRpower = (y - x - 0.03 * rx);
-//        double BRpower = (y + x - 0.03 * rx);
+    public void autodrive(double rx) {
+        double FLpower = (-rx);
+        double BLpower = (rx);
+        double FRpower = (rx);
+        double BRpower = (-rx);
+
+        FLmotor.setPower(FLpower);
+        FRmotor.setPower(FRpower);
+        BLmotor.setPower(BLpower);
+        BRmotor.setPower(BRpower);
+    }
+
+
+//    private final ControlSystem drivecontroller = ControlSystem.builder()
+//            .posPid(0.01, 0.0, 0.0) //need to tune
+//            .basicFF(0.01, 0.02, 0.03) //need to tune
+//            .build();
 //
-//        FLmotor.setPower(FLpower);
-//        FRmotor.setPower(FRpower);
-//        BLmotor.setPower(BLpower);
-//        BRmotor.setPower(BRpower);
-//    } //make this a class or command?
-
-
-    private final ControlSystem drivecontroller = ControlSystem.builder()
-            .velPid(0.01, 0.0, 0.0) //need to tune
-            .basicFF(0.01, 0.02, 0.03) //need to tune
-            .build();
-
-    public Command autodrivecmd = new Command() {
-
-        public void update() {
-
-            new RunToVelocity(drivecontroller, 0.03*headingAdjust);
-
-            new SetPower(FLmotor, drivecontroller.calculate(FLmotor.getState()));
-            new SetPower(FRmotor, -drivecontroller.calculate(FRmotor.getState()));
-            new SetPower(BLmotor, drivecontroller.calculate(BLmotor.getState()));
-            new SetPower(BRmotor, -drivecontroller.calculate(BRmotor.getState()));
-
-        }
-
-
-        @Override
-        public boolean isDone() {
-            return headingAdjust < 0.04; //like 2.3 degrees of error
-        }
-
-    };
-
-
+//    public Command autodrivecmd = new Command() {
+//
+//        public void update() {
+//            drivecontroller.setGoal(new KineticState(0.0, 0.0, 0.0));
+//            KineticState currentState = new KineticState(headingAdjust, 0.0, 0.0);
+//            double turnPower = drivecontroller.calculate(currentState);
+//            new SetPower(FLmotor, turnPower);
+//            new SetPower(FRmotor, -turnPower);
+//            new SetPower(BLmotor, -turnPower);
+//            new SetPower(BRmotor, turnPower);
+//
+//        }
+//
+//
+//        @Override
+//        public boolean isDone() {
+//            return Math.abs(headingAdjust) < 0.04; //like 2.3 degrees of error
+//        }
+//
+//        public void stop() {
+//            headingAdjust = 0.0;
+//        }
+//
+//    };
 
 }

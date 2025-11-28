@@ -11,9 +11,6 @@ import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
-import dev.nextftc.core.commands.utility.InstantCommand;
-import dev.nextftc.core.commands.utility.LambdaCommand;
-import dev.nextftc.core.subsystems.Subsystem;
 
 public class Routines {
 
@@ -48,6 +45,7 @@ public class Routines {
                                 new ParallelGroup(
                                         outtake.close,
                                         outtake.off
+                                        //need a way to turn adjust off while letting it continue while moving/shooting
                                 )
                         )
                 )
@@ -56,14 +54,23 @@ public class Routines {
     public Command robotadjust = new Command() {
 
         @Override
+        public void start() {
+            ll.adjust();
+            //drive.autodrivecmd.start();
+            drive.autodrive(headingAdjust);
+        }
+
+        @Override
         public boolean isDone() {
-            return headingAdjust < 0.04; //like 2.3 degrees
+            //return headingAdjust < 0.04; //like 2.3 degrees
+            return false;
         }
 
         @Override
         public void update() {
             ll.adjust();
-            drive.autodrivecmd.start();
+            //drive.autodrivecmd.start();
+            drive.autodrive(headingAdjust);
         }
 
     };
@@ -73,6 +80,29 @@ public class Routines {
                     intake.on,
                     outtake.reverse
             );
+    }
+
+    public Command inSequencemoving() {
+        return new ParallelGroup(
+                intake.onmoving,
+                outtake.reverse
+        );
+    }
+
+    public Command outtaketest1() {
+        return new ParallelGroup(
+                outtake.teston2000,
+                new Delay(3.0),
+                outtake.testoff
+        );
+    }
+
+    public Command outtaketest2() {
+        return new ParallelGroup(
+                outtake.teston4000,
+                new Delay(3.0),
+                outtake.testoff
+        );
     }
 
 }
