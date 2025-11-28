@@ -80,9 +80,11 @@ public class Routines {
             public void update() {
                 long elapsed = System.currentTimeMillis() - sequenceStart;
 
-                // Reverse intake at 500ms
+                // Reverse intake at 500ms AND spin servos backward
                 if (elapsed > INTAKE_REVERSE_START_MS && !intakeReversed) {
                     Intake.INSTANCE.revmoving.schedule();
+                    outtake.spinServo1.setPower(-0.5);
+                    outtake.spinServo2.setPower(-0.5);
                     intakeReversed = true;
                 }
 
@@ -92,9 +94,11 @@ public class Routines {
                     gateOpened = true;
                 }
 
-                // Start intake forward at 1250ms
+                // Start intake forward at 1250ms AND spin servos forward
                 if (elapsed > INTAKE_FORWARD_START_MS && !intakeForwarded) {
                     Intake.INSTANCE.onmoving.schedule();
+                    outtake.spinServo1.setPower(0.7);
+                    outtake.spinServo2.setPower(0.7);
                     intakeForwarded = true;
                 }
 
@@ -102,6 +106,8 @@ public class Routines {
                 if (elapsed > SEQUENCE_DURATION_MS) {
                     Outtake.INSTANCE.close.schedule();
                     Intake.INSTANCE.off.schedule();
+                    outtake.spinServo1.setPower(0);
+                    outtake.spinServo2.setPower(0);
                     Outtake.shooting = false;
                 }
             }
@@ -116,6 +122,8 @@ public class Routines {
                 Outtake.shooting = false;
                 Outtake.INSTANCE.close.schedule();
                 Intake.INSTANCE.off.schedule();
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
             }
         };
     }
@@ -126,18 +134,32 @@ public class Routines {
 
     public Command inSequence() {
         return new Command() {
+            private long startTime = 0;
+            private boolean servosStarted = false;
+
             @Override
             public void start() {
                 drive.setMulti(0.58);
                 intake.on.schedule();
-                // Start spin servos
-                outtake.spinServo1.setPower(-1.0);
-                outtake.spinServo2.setPower(-1.0);
+                startTime = System.currentTimeMillis();
+                servosStarted = false;
+            }
+
+            @Override
+            public void update() {
+                long elapsed = System.currentTimeMillis() - startTime;
+
+                // Start spin servos after 500ms delay
+                if (elapsed > 500 && !servosStarted) {
+                    outtake.spinServo1.setPower(-0.5);
+                    outtake.spinServo2.setPower(-0.5);
+                    servosStarted = true;
+                }
             }
 
             @Override
             public boolean isDone() {
-                return true;
+                return false;  // Changed to false so update() keeps running
             }
         };
     }

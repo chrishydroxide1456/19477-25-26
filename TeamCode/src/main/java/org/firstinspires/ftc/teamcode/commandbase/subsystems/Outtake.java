@@ -20,9 +20,14 @@ public class Outtake implements Subsystem {
     public final MotorEx Bmotor = new MotorEx("Bmotor");
 
     private Servo gateServo;
-    public CRServo spinServo1;  // CHANGED: private → public
-    public CRServo spinServo2;  // CHANGED: private → public
+    public CRServo spinServo1;
+    public CRServo spinServo2;
     public Servo led;
+
+    // LED flashing state
+    private long lastFlashTime = 0;
+    private boolean flashState = false;
+    private static final long FLASH_INTERVAL_MS = 250; // Flash every 250ms
 
     public void initialize(HardwareMap hardwareMap) {
         led = hardwareMap.get(Servo.class, "led");
@@ -38,22 +43,41 @@ public class Outtake implements Subsystem {
         Bmotor.setPower(0);
         spinServo1.setPower(0);
         spinServo2.setPower(0);
-        led.setPosition(0.277);
+        led.setPosition(0.277); // Red
         shooting = false;
+        lastFlashTime = 0;
+        flashState = false;
     }
 
     @Override
     public void periodic() {
+        // Flywheel control
         if (shooting && targetVel > 0.0) {
             double power = 0.25 + (targetVel / 3000.0);
             power = Math.max(0.40, Math.min(0.85, power));
             Tmotor.setPower(power);
             Bmotor.setPower(power);
-            led.setPosition(0.500);
         } else {
             Tmotor.setPower(0);
             Bmotor.setPower(0);
-            led.setPosition(tagVisible ? 0.500 : 0.277);
+        }
+
+        // LED control based on state
+        long currentTime = System.currentTimeMillis();
+
+        if (shooting) {
+            // GREEN when shooting
+            led.setPosition(0.500);
+        } else if (tagVisible) {
+            // BLUE when AprilTag visible
+            led.setPosition(0.611);
+        } else {
+            // FLASHING RED when no AprilTag
+            if (currentTime - lastFlashTime > FLASH_INTERVAL_MS) {
+                flashState = !flashState;
+                lastFlashTime = currentTime;
+            }
+            led.setPosition(flashState ? 0.277 : 0.0); // Flash between red and off
         }
     }
 
