@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.distance;
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAdjust;
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.targetVel;
 import static dev.nextftc.bindings.Bindings.button;
+
 import dev.nextftc.core.components.BindingsComponent;
 import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
@@ -18,72 +19,79 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class TeleOp extends NextFTCOpMode {
-//    public Intake intake = Intake.INSTANCE;
-//    public Outtake outtake = Outtake.INSTANCE;
-//    public LL ll = LL.INSTANCE;
-//    public Drive drive = Drive.INSTANCE;
-//    public Routines routines = new Routines();
+
     private Intake intake;
     private Outtake outtake;
     private LL ll;
     private Drive drive;
     private Routines routines;
 
+    @Override
     public void onInit() {
+        // Initialize subsystems
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
         outtake.initialize(hardwareMap);
         ll = LL.INSTANCE;
         ll.initialize(hardwareMap);
         drive = Drive.INSTANCE;
+
         routines = new Routines(intake, outtake, ll, drive);
 
+        // Add components for NextFTC
         addComponents(
                 new SubsystemComponent(ll, drive, intake, outtake),
                 BulkReadComponent.INSTANCE,
                 BindingsComponent.INSTANCE
         );
 
+        // === Button bindings ===
 
-        button(() -> gamepad2.a) //change to x later
+        // Test outtake sequence
+        button(() -> gamepad2.dpad_up)
+                .whenBecomesTrue(() -> routines.testoutSequence().schedule());
+
+        // Intake in/out toggle
+        button(() -> gamepad2.a)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> routines.inSequence().start())
-                .whenBecomesFalse(() -> routines.stopinSequence().start());
+                .whenBecomesTrue(() -> routines.inSequence().schedule())
+                .whenBecomesFalse(() -> routines.stopinSequence().schedule());
+
+        // Intake reverse
 
         button(() -> gamepad2.x)
-                .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> intake.reverse.start())
-                .whenBecomesFalse(() -> intake.off.start());
-
-
-        button(() -> gamepad2.dpad_up)
-                .whenBecomesTrue(() -> routines.outSequence().start());
-
-        button(() -> gamepad1.x)
-                .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> outtake.teston4000.start())
-                .whenBecomesFalse(() -> outtake.off.start());
-
-        button(() -> gamepad1.a)
-                .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> outtake.teston2000.start())
-                .whenBecomesFalse(() -> outtake.off.start());
+                .toggleOnBecomesTrue()   
+                .whenBecomesTrue(() -> Intake.INSTANCE.reverse.schedule())
+                .whenBecomesFalse(() -> Intake.INSTANCE.off.schedule());
+// ------------------ OUTTAKE TESTS -----------------------
+        // Outtake manual high-speed
+//        button(() -> gamepad1.x)
+//                .toggleOnBecomesTrue()
+//                .whenBecomesTrue(() -> Outtake.INSTANCE.teston4000.schedule())
+//                .whenBecomesFalse(() -> Outtake.INSTANCE.testoff.schedule());
+//
+//        // Outtake test sequence
+//        button(() -> gamepad1.a)
+//                .toggleOnBecomesTrue()
+//                .whenBecomesTrue(() -> routines.outtaketest1().schedule())
+//                .whenBecom esFalse(() -> Outtake.INSTANCE.testoff.schedule());
     }
 
-
+    @Override
     public void onUpdate() {
+        // Drive with gamepad1
         drive.driverdrive(gamepad1);
+
+        // LL adjustments (if needed)
         if (gamepad2.a) {
             ll.setID();
         }
-        // ll.adjust();
-        // drive.autodrive(headingAdjust);
 
+        // Telemetry
         telemetry.addData("ID", ID);
         telemetry.addData("headingadjust", headingAdjust);
         telemetry.addData("distance", distance);
         telemetry.addData("targetvelo", targetVel);
         telemetry.update();
     }
-
 }
