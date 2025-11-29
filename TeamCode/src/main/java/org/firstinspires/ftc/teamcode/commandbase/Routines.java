@@ -68,7 +68,7 @@ public class Routines {
     }
 
     public Command inSequence() {
-        drive.setMulti(0.58);
+        drive.setMulti(1.0);
         return new ParallelGroup(
                 Intake.INSTANCE.on,
                 Outtake.INSTANCE.reverse
@@ -76,9 +76,9 @@ public class Routines {
     }
 
     public Command stopinSequence() {
-        drive.setMulti(1.0);
+        drive.setMulti(0.58);
         return new ParallelGroup(
-                Intake.INSTANCE.off,
+                Intake.INSTANCE.keeping,
                 Outtake.INSTANCE.testoff
         );
     }

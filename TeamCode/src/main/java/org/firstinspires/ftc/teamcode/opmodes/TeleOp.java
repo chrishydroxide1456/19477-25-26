@@ -57,12 +57,20 @@ public class TeleOp extends NextFTCOpMode {
                 .whenBecomesTrue(() -> routines.inSequence().schedule())
                 .whenBecomesFalse(() -> routines.stopinSequence().schedule());
 
+
+        button(() -> gamepad2.y)
+                .toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> intake.keeping.start())
+                .whenBecomesFalse(() -> intake.off.start());
         // Intake reverse
 
         button(() -> gamepad2.x)
                 .toggleOnBecomesTrue()   
                 .whenBecomesTrue(() -> Intake.INSTANCE.reverse.schedule())
                 .whenBecomesFalse(() -> Intake.INSTANCE.off.schedule());
+
+
+
 // ------------------ OUTTAKE TESTS -----------------------
         // Outtake manual high-speed
 //        button(() -> gamepad1.x)
