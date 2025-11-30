@@ -12,10 +12,10 @@ import dev.nextftc.core.commands.groups.SequentialGroup;
 
 public class Routines {
 
-    private Intake intake;
-    private Outtake outtake;
-    private LL ll;
-    private Drive drive;
+    private final Intake intake;
+    private final Outtake outtake;
+    private final LL ll;
+    private final Drive drive;
 
     public Routines(Intake intake, Outtake outtake, LL ll, Drive drive) {
         this.intake = intake;
@@ -24,81 +24,64 @@ public class Routines {
         this.drive = drive;
     }
 
-    /**
-     * Test Outtake sequence: spins flywheel, opens gate, runs intake, then stops everything
-     */
+    // Auto-align + shoot sequence
     public Command testoutSequence() {
         return new ParallelGroup(
-                // Spin flywheel in background
-                new Command() {
-                    @Override
-                    public void start() { LL.targetVel = 933; }
-                    @Override
-                    public void update() {}
-                    @Override
-                    public boolean isDone() { return false; }
-                },
+                robotAdjust,
 
-                // Open gate after 0.75s
                 new SequentialGroup(
                         new Delay(0.75),
                         Outtake.INSTANCE.open
                 ),
 
-                // Start intake after 1.25s
                 new SequentialGroup(
                         new Delay(1.25),
                         Intake.INSTANCE.onmoving
                 ),
 
-                // Stop everything after 3.25s
                 new SequentialGroup(
                         new Delay(3.25),
                         new ParallelGroup(
-                                new Command() {
-                                    @Override
-                                    public void start() { LL.targetVel = 0.0; }
-                                    @Override public boolean isDone() { return true; }
-                                },
-                                Outtake.INSTANCE.close,
-                                Intake.INSTANCE.off
+                                Intake.INSTANCE.off,
+                                Outtake.INSTANCE.close
                         )
                 )
         );
     }
 
     public Command inSequence() {
-        drive.setMulti(1.0);
+        drive.setMulti(0.58);
         return new ParallelGroup(
                 Intake.INSTANCE.on,
-                Outtake.INSTANCE.reverse
+                // you can add Outtake reverse here later if needed
+                Intake.INSTANCE.on // placeholder; adjust as desired
         );
     }
 
     public Command stopinSequence() {
-        drive.setMulti(0.58);
+        drive.setMulti(1.0);
         return new ParallelGroup(
-                Intake.INSTANCE.keeping,
-                Outtake.INSTANCE.testoff
+                Intake.INSTANCE.off
         );
     }
 
-    public Command stopoutSequence() {
-        return new ParallelGroup(
-                Outtake.INSTANCE.off
-        );
-    }
+    public final Command robotAdjust = new Command() {
+        @Override
+        public void start() {
+            drive.startAutoAlign();
+        }
 
-    public Command outtaketest1() {
-        return new ParallelGroup(
-                Outtake.INSTANCE.teston2000,
-                Outtake.INSTANCE.open
-        );
-    }
+        @Override
+        public void update() {
+            // LL.adjust and outtake.periodic are called from TeleOp onUpdate
+        }
 
-    public Command outtaketest2() {
-        return new ParallelGroup(
-                Outtake.INSTANCE.teston4000
-        );
-    }
+        @Override
+        public boolean isDone() { return false; }
+
+        @Override
+        public void stop(boolean interrupted) {
+            drive.stopAutoAlign();
+        }
+    };
 }
