@@ -12,7 +12,8 @@ import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.commands.groups.ParallelGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 
-public class Routines {
+public class
+Routines {
 
 //    private Intake intake = Intake.INSTANCE;
 //    private Outtake outtake = Outtake.INSTANCE;
@@ -76,32 +77,34 @@ public class Routines {
     };
 
     public Command inSequence() {
+            drive.setMulti(0.58);
             return new ParallelGroup(
                     intake.on,
                     outtake.reverse
             );
     }
-
-    public Command inSequencemoving() {
+    public Command stopinSequence() {
+        drive.setMulti(1.0);
         return new ParallelGroup(
-                intake.onmoving,
-                outtake.reverse
+                intake.off,
+                outtake.off
+        );
+    }
+    public Command stopoutSequence() {
+        return new ParallelGroup(
+                outtake.off
         );
     }
 
     public Command outtaketest1() {
         return new ParallelGroup(
-                outtake.teston2000,
-                new Delay(3.0),
-                outtake.testoff
+                outtake.teston2000
         );
     }
 
     public Command outtaketest2() {
         return new ParallelGroup(
-                outtake.teston4000,
-                new Delay(3.0),
-                outtake.testoff
+                outtake.teston4000
         );
     }
 

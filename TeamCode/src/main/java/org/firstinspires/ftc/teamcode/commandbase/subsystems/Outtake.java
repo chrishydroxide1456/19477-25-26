@@ -75,7 +75,7 @@ public class Outtake implements Subsystem {
 
         @Override
         public boolean isDone() {
-            return Tmotor.getVelocity() < 28.0; //like 60 rpm
+            return Tmotor.getVelocity() == 0.0; //like 60 rpm
         }
 
         @Override

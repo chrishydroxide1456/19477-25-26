@@ -44,32 +44,30 @@ public class TeleOp extends NextFTCOpMode {
                 BindingsComponent.INSTANCE
         );
 
-        button(() -> gamepad2.y)
-                .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> routines.inSequencemoving().start())
-                .whenBecomesFalse(() ->intake.off.start());
 
-        button(() -> gamepad2.dpad_up) //change to x later
+        button(() -> gamepad2.a) //change to x later
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> routines.inSequence().start())
-                .whenBecomesFalse(() -> intake.off.stop(true));
+                .whenBecomesFalse(() -> routines.stopinSequence().start());
 
-        button(() -> gamepad2.dpad_down)
+        button(() -> gamepad2.x)
                 .toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> intake.reverse.start())
                 .whenBecomesFalse(() -> intake.off.start());
 
-//        button(() -> gamepad2.a)
-//                .toggleOnBecomesTrue()
-//                .whenBecomesTrue(() -> routines.outSequence().start());
 
-        button(() -> gamepad1.xWasPressed())
-                .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> routines.outtaketest1().start());
+        button(() -> gamepad2.dpad_up)
+                .whenBecomesTrue(() -> routines.outSequence().start());
 
-        button(() -> gamepad1.aWasPressed())
+        button(() -> gamepad1.x)
                 .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> routines.outtaketest2().start());
+                .whenBecomesTrue(() -> outtake.teston4000.start())
+                .whenBecomesFalse(() -> outtake.off.start());
+
+        button(() -> gamepad1.a)
+                .toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> outtake.teston2000.start())
+                .whenBecomesFalse(() -> outtake.off.start());
     }
 
 
@@ -78,9 +76,8 @@ public class TeleOp extends NextFTCOpMode {
         if (gamepad2.a) {
             ll.setID();
         }
-
-        ll.adjust();
-        drive.autodrive(headingAdjust);
+        // ll.adjust();
+        // drive.autodrive(headingAdjust);
 
         telemetry.addData("ID", ID);
         telemetry.addData("headingadjust", headingAdjust);

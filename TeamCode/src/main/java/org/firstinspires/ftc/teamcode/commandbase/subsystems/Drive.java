@@ -13,12 +13,16 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 public class Drive implements Subsystem {
     public static final Drive INSTANCE = new Drive();
+    public static double multi = 1.0;
     private Drive() { }
     private final MotorEx FLmotor = new MotorEx("FLmotor");
     private final MotorEx FRmotor = new MotorEx("FRmotor").reversed();
     private final MotorEx BLmotor = new MotorEx("BLmotor").reversed();
     private final MotorEx BRmotor = new MotorEx("BRmotor").reversed();
 
+    public void setMulti (double newMulti){
+        multi = newMulti;
+    }
 
     public void driverdrive(Gamepad gamepad) { //add multiplier later
         double y = -gamepad.left_stick_y;
@@ -29,10 +33,10 @@ public class Drive implements Subsystem {
         double FRpower = (-y - x - rx);
         double BRpower = (y - x + rx);
 
-        FLmotor.setPower(FLpower);
-        FRmotor.setPower(FRpower);
-        BLmotor.setPower(BLpower);
-        BRmotor.setPower(BRpower);
+        FLmotor.setPower(FLpower*multi);
+        FRmotor.setPower(FRpower*multi);
+        BLmotor.setPower(BLpower*multi);
+        BRmotor.setPower(BRpower*multi);
     }
 
 //    private HolonomicMode RobotCentric;
