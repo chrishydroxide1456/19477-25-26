@@ -1,21 +1,14 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.ID;
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.distance;
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAdjust;
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.targetVel;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.*;
 import static dev.nextftc.bindings.Bindings.button;
 
-import dev.nextftc.core.components.BindingsComponent;
-import dev.nextftc.core.components.SubsystemComponent;
+import dev.nextftc.core.components.*;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 
 import org.firstinspires.ftc.teamcode.commandbase.Routines;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.LL;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Drive;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class TeleOpRed extends NextFTCOpMode {
@@ -26,15 +19,10 @@ public class TeleOpRed extends NextFTCOpMode {
     private Drive drive;
     private Routines routines;
 
-    private long ledBlinkTimer = 0;
-    private boolean ledState = false;
-
-    private boolean outtakeSequenceActive = false;
-    private long sequenceStartTime = 0;
-
     @Override
     public void onInit() {
-        LL.ID = 0; // ignoring ID for now
+        LL.ID = 24;
+        Drive.INSTANCE.stopAutoAlign();
 
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
@@ -50,49 +38,55 @@ public class TeleOpRed extends NextFTCOpMode {
                 BindingsComponent.INSTANCE
         );
 
-        button(() -> gamepad2.dpad_up)
-                .whenBecomesTrue(() -> {
-                    routines.testoutSequence().schedule();
-                    outtakeSequenceActive = true;
-                    sequenceStartTime = System.currentTimeMillis();
-                });
+        // DPAD UP = AUTO ALIGN
+        button(() -> gamepad2.dpad_up).whenBecomesTrue(() -> {
+            if (tagVisible) {
+                routines.autoAlignOnly().schedule();
+            } else {
+                gamepad2.rumble(100); // Haptic feedback for no target
+            }
+        });
 
-        button(() -> gamepad2.a)
-                .toggleOnBecomesTrue()
+        // DPAD DOWN = SHOOT SEQUENCE
+        button(() -> gamepad2.dpad_down).whenBecomesTrue(() -> {
+            if (tagVisible) {
+                routines.testoutSequence().schedule();
+            } else {
+                gamepad2.rumble(100); // Haptic feedback for no target
+            }
+        });
+
+        // A = intake toggle
+        button(() -> gamepad2.a).toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> routines.inSequence().schedule())
                 .whenBecomesFalse(() -> routines.stopinSequence().schedule());
+        // A = intake toggle
+        button(() -> gamepad2.x).toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> intake.reverse.schedule())
+                .whenBecomesFalse(() -> intake.off.schedule());
     }
 
     @Override
     public void onUpdate() {
         drive.driverdrive(gamepad2);
 
-        // Vision + flywheel every loop
-        ll.adjust();
-        outtake.periodic();
+        if (tagVisible) {
+            // Calculate what the RPM SHOULD be
+            double calculatedRPM = ll.gettargetVel(distance);
 
-        // LED blink
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - ledBlinkTimer >= 500) {
-            ledBlinkTimer = currentTime;
-            ledState = !ledState;
-
-            if (outtakeSequenceActive) {
-                outtake.led.setPosition(ledState ? 1.0 : 0.7);
-            } else {
-                outtake.led.setPosition(ledState ? 0.5 : 0.3);
-            }
+            telemetry.addLine("=== SHOOT SYSTEM ===");
+            telemetry.addData("Distance", "%.1f in", distance);
+            telemetry.addData("Calculated RPM", "%.0f", calculatedRPM);
+            telemetry.addData("Static targetVel", "%.0f RPM", targetVel);
+            telemetry.addData("Match?", calculatedRPM == targetVel ? "YES" : "NO!");
+            telemetry.addData("Power", "%.2f%%", (0.25 + (targetVel / 3000.0)) * 100);
+            telemetry.addData("headingAdjust", "%.1f°", headingAdjust);
+            telemetry.addData("AutoAlign", Drive.INSTANCE.isAutoAlignActive());
+            telemetry.addData("Shooting", Outtake.shooting);
+        } else {
+            telemetry.addLine("=== NO TARGET ===");
+            telemetry.addData("Limelight", "No AprilTag visible");
         }
-
-        if (outtakeSequenceActive && currentTime - sequenceStartTime > 4000) {
-            outtakeSequenceActive = false;
-        }
-
-        telemetry.addData("ID", ID);
-        telemetry.addData("headingAdjust", headingAdjust);
-        telemetry.addData("distance", distance);
-        telemetry.addData("targetVel", targetVel);
-        telemetry.addData("autoAlign", drive.isAutoAlignActive());
         telemetry.update();
     }
 }

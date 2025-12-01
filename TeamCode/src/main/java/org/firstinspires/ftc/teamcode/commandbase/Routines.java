@@ -1,21 +1,23 @@
 package org.firstinspires.ftc.teamcode.commandbase;
 
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.LL;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Drive;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
-
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import dev.nextftc.core.commands.Command;
-import dev.nextftc.core.commands.delays.Delay;
-import dev.nextftc.core.commands.groups.ParallelGroup;
-import dev.nextftc.core.commands.groups.SequentialGroup;
+import dev.nextftc.core.commands.groups.*;
 
 public class Routines {
-
     private final Intake intake;
     private final Outtake outtake;
     private final LL ll;
     private final Drive drive;
+
+    // Timing constants
+    private static final long FLYWHEEL_SPINUP_MS = 750;
+    private static final long INTAKE_REVERSE_START_MS = 500;
+    private static final long GATE_OPEN_MS = 750;
+    private static final long INTAKE_FORWARD_START_MS = 1250;
+    private static final long SEQUENCE_DURATION_MS = 3250;
+    private static final double HEADING_TOLERANCE = 0.7;
+    private static final long ALIGN_TIMEOUT_MS = 1500;
 
     public Routines(Intake intake, Outtake outtake, LL ll, Drive drive) {
         this.intake = intake;
@@ -24,64 +26,137 @@ public class Routines {
         this.drive = drive;
     }
 
-    // Auto-align + shoot sequence
+    public Command autoAlignOnly() {
+        return new Command() {
+            private long startTime;
+
+            @Override
+            public void start() {
+                drive.startAutoAlign();
+                startTime = System.currentTimeMillis();
+            }
+
+            @Override
+            public boolean isDone() {
+                long elapsed = System.currentTimeMillis() - startTime;
+                boolean aligned = Math.abs(LL.headingAdjust) <= HEADING_TOLERANCE;
+                boolean timeout = elapsed > ALIGN_TIMEOUT_MS;
+
+                return (aligned && LL.tagVisible) || timeout;
+            }
+
+            @Override
+            public void stop(boolean interrupted) {
+                drive.stopAutoAlign();
+            }
+        };
+    }
+
     public Command testoutSequence() {
-        return new ParallelGroup(
-                robotAdjust,
+        return new Command() {
+            private long sequenceStart = 0;
+            private boolean gateOpened = false;
+            private boolean intakeReversed = false;
+            private boolean intakeForwarded = false;
 
-                new SequentialGroup(
-                        new Delay(0.75),
-                        Outtake.INSTANCE.open
-                ),
+            @Override
+            public void start() {
+                if (!LL.tagVisible) {
+                    return;
+                }
 
-                new SequentialGroup(
-                        new Delay(1.25),
-                        Intake.INSTANCE.onmoving
-                ),
+                // Stop spin servos immediately
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
 
-                new SequentialGroup(
-                        new Delay(3.25),
-                        new ParallelGroup(
-                                Intake.INSTANCE.off,
-                                Outtake.INSTANCE.close
-                        )
-                )
-        );
+                Outtake.shooting = true;
+                sequenceStart = System.currentTimeMillis();
+                gateOpened = false;
+                intakeReversed = false;
+                intakeForwarded = false;
+            }
+
+            @Override
+            public void update() {
+                long elapsed = System.currentTimeMillis() - sequenceStart;
+
+                // Reverse intake at 500ms
+                if (elapsed > INTAKE_REVERSE_START_MS && !intakeReversed) {
+                    Intake.INSTANCE.revmoving.schedule();
+                    intakeReversed = true;
+                }
+
+                // Open gate at 750ms
+                if (elapsed > GATE_OPEN_MS && !gateOpened) {
+                    Outtake.INSTANCE.open.schedule();
+                    gateOpened = true;
+                }
+
+                // Start intake forward at 1250ms
+                if (elapsed > INTAKE_FORWARD_START_MS && !intakeForwarded) {
+                    Intake.INSTANCE.onmoving.schedule();
+                    intakeForwarded = true;
+                }
+
+                // Complete sequence at 3250ms
+                if (elapsed > SEQUENCE_DURATION_MS) {
+                    Outtake.INSTANCE.close.schedule();
+                    Intake.INSTANCE.off.schedule();
+                    Outtake.shooting = false;
+                }
+            }
+
+            @Override
+            public boolean isDone() {
+                return System.currentTimeMillis() - sequenceStart > SEQUENCE_DURATION_MS;
+            }
+
+            @Override
+            public void stop(boolean interrupted) {
+                Outtake.shooting = false;
+                Outtake.INSTANCE.close.schedule();
+                Intake.INSTANCE.off.schedule();
+            }
+        };
+    }
+
+    public Command fullOuttakeSequence() {
+        return testoutSequence();
     }
 
     public Command inSequence() {
-        drive.setMulti(0.58);
-        return new ParallelGroup(
-                Intake.INSTANCE.on,
-                // you can add Outtake reverse here later if needed
-                Intake.INSTANCE.on // placeholder; adjust as desired
-        );
+        return new Command() {
+            @Override
+            public void start() {
+                drive.setMulti(0.58);
+                intake.on.schedule();
+                // Start spin servos
+                outtake.spinServo1.setPower(-1.0);
+                outtake.spinServo2.setPower(-1.0);
+            }
+
+            @Override
+            public boolean isDone() {
+                return true;
+            }
+        };
     }
 
     public Command stopinSequence() {
-        drive.setMulti(1.0);
-        return new ParallelGroup(
-                Intake.INSTANCE.off
-        );
+        return new Command() {
+            @Override
+            public void start() {
+                drive.setMulti(1.0);
+                intake.keeping.schedule();
+                // Stop spin servos
+                outtake.spinServo1.setPower(-0.2);
+                outtake.spinServo2.setPower(-0.2);
+            }
+
+            @Override
+            public boolean isDone() {
+                return true;
+            }
+        };
     }
-
-    public final Command robotAdjust = new Command() {
-        @Override
-        public void start() {
-            drive.startAutoAlign();
-        }
-
-        @Override
-        public void update() {
-            // LL.adjust and outtake.periodic are called from TeleOp onUpdate
-        }
-
-        @Override
-        public boolean isDone() { return false; }
-
-        @Override
-        public void stop(boolean interrupted) {
-            drive.stopAutoAlign();
-        }
-    };
 }

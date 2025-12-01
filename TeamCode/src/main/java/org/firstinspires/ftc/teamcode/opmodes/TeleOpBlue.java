@@ -1,21 +1,14 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.ID;
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.distance;
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAdjust;
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.targetVel;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.*;
 import static dev.nextftc.bindings.Bindings.button;
 
-import dev.nextftc.core.components.BindingsComponent;
-import dev.nextftc.core.components.SubsystemComponent;
+import dev.nextftc.core.components.*;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 
 import org.firstinspires.ftc.teamcode.commandbase.Routines;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.LL;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Drive;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class TeleOpBlue extends NextFTCOpMode {
@@ -26,18 +19,11 @@ public class TeleOpBlue extends NextFTCOpMode {
     private Drive drive;
     private Routines routines;
 
-    // LED blinking variables
-    private long ledBlinkTimer = 0;
-    private boolean ledState = false;
-
-    // Outtake sequence tracking
-    private boolean outtakeSequenceActive = false;
-    private long sequenceStartTime = 0;
-
     @Override
     public void onInit() {
-        // Initialize subsystems
-        LL.ID = 20;
+        LL.ID = 24;
+        Drive.INSTANCE.stopAutoAlign();
+
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
         outtake.initialize(hardwareMap);
@@ -52,70 +38,33 @@ public class TeleOpBlue extends NextFTCOpMode {
                 BindingsComponent.INSTANCE
         );
 
-        // ------------------ BUTTON BINDINGS ------------------
+        // DPAD UP = AUTO ALIGN
+        button(() -> gamepad2.dpad_up).whenBecomesTrue(() -> {
+            routines.autoAlignOnly().schedule();
+        });
 
-        // Test outtake sequence
-        button(() -> gamepad2.dpad_up)
-                .whenBecomesTrue(() -> {
-                    routines.testoutSequence().schedule();
-                    outtakeSequenceActive = true;
-                    sequenceStartTime = System.currentTimeMillis();
-                });
+        // DPAD DOWN = YOUR WORKING SEQUENCE
+        button(() -> gamepad2.dpad_down).whenBecomesTrue(() -> {
+            routines.testoutSequence().schedule();  // CHANGED: use testoutSequence
+        });
 
-        // Intake toggle
-        button(() -> gamepad2.a)
-                .toggleOnBecomesTrue()
+        // A = intake toggle
+        button(() -> gamepad2.a).toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> routines.inSequence().schedule())
                 .whenBecomesFalse(() -> routines.stopinSequence().schedule());
-
-        // Intake keeping
-        button(() -> gamepad2.y)
-                .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> intake.keeping.start())
-                .whenBecomesFalse(() -> intake.off.start());
-
-        // Intake reverse
-        button(() -> gamepad2.x)
-                .toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> intake.reverse.schedule())
-                .whenBecomesFalse(() -> intake.off.schedule());
     }
 
     @Override
     public void onUpdate() {
-        // Driving
+        ll.adjust();
+        outtake.periodic();
         drive.driverdrive(gamepad2);
 
-        // Update Limelight ID if button pressed
-        if (gamepad2.a) {
-            ll.setID();
-        }
-
-        // ------------------ LED CONTROL ------------------
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - ledBlinkTimer >= 500) { // toggle every 0.5s
-            ledBlinkTimer = currentTime;
-            ledState = !ledState;
-
-            if (outtakeSequenceActive) {
-                // Red LED during sequence
-                outtake.led.setPosition(ledState ? 1.0 : 0.7);
-            } else {
-                // Green LED otherwise
-                outtake.led.setPosition(ledState ? 0.5 : 0.3);
-            }
-        }
-
-        // Reset sequence flag after 4 seconds (or adjust to match your routine duration)
-        if (outtakeSequenceActive && currentTime - sequenceStartTime > 4000) {
-            outtakeSequenceActive = false;
-        }
-
-        // ------------------ TELEMETRY ------------------
-        telemetry.addData("ID", ID);
-        telemetry.addData("headingAdjust", headingAdjust);
-        telemetry.addData("distance", distance);
-        telemetry.addData("targetVel", targetVel);
+        telemetry.addLine("=== SHOOT SYSTEM ===");
+        telemetry.addData("headingAdjust", "%.1f°", headingAdjust);
+        telemetry.addData("autoAlign", Drive.INSTANCE.isAutoAlignActive());
+        telemetry.addData("targetVel", "%.0f", targetVel);
+        telemetry.addData("distance", "%.1f in", distance);
         telemetry.update();
     }
 }

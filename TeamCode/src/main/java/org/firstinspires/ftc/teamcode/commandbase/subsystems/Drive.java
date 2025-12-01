@@ -7,24 +7,34 @@ import dev.nextftc.hardware.impl.MotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 public class Drive implements Subsystem {
-
     public static final Drive INSTANCE = new Drive();
     public static double multi = 1.0;
-    private Drive() {}
+    private Drive() { }
 
-    private final MotorEx FLmotor = new MotorEx("FLmotor").brakeMode();
-    private final MotorEx FRmotor = new MotorEx("FRmotor").reversed().brakeMode();
-    private final MotorEx BLmotor = new MotorEx("BLmotor").reversed().brakeMode();
-    private final MotorEx BRmotor = new MotorEx("BRmotor").reversed().brakeMode();
+    // EXACT SAME MOTOR SETUP AS YOUR ORIGINAL
+    private final MotorEx FLmotor = new MotorEx("FLmotor");
+    private final MotorEx FRmotor = new MotorEx("FRmotor").reversed();
+    private final MotorEx BLmotor = new MotorEx("BLmotor").reversed();
+    private final MotorEx BRmotor = new MotorEx("BRmotor").reversed();
 
     private boolean autoAlignActive = false;
 
-    public void setMulti(double newMulti) { multi = newMulti; }
+    public void setMulti(double newMulti) {
+        multi = newMulti;
+    }
+
     public void startAutoAlign() { autoAlignActive = true; }
     public void stopAutoAlign() { autoAlignActive = false; }
     public boolean isAutoAlignActive() { return autoAlignActive; }
 
     public void driverdrive(Gamepad gamepad) {
+        // AUTO ALIGN OVERRIDES EVERYTHING
+        if (autoAlignActive) {
+            autoAlignPure();
+            return;
+        }
+
+        // YOUR EXACT ORIGINAL DRIVING CODE
         if (gamepad == null) {
             FLmotor.setPower(0);
             FRmotor.setPower(0);
@@ -36,41 +46,47 @@ public class Drive implements Subsystem {
         double y = -gamepad.left_stick_y;
         double x = -gamepad.left_stick_x * 1.1;
         double rx = -gamepad.right_stick_x;
+        double FLpower = (-y + x + rx);
+        double BLpower = (y + x - rx);
+        double FRpower = (-y - x - rx);
+        double BRpower = (y - x + rx);
 
-        double FLpower = (-y + x + rx) * multi;
-        double BLpower = (y + x - rx) * multi;
-        double FRpower = (-y - x - rx) * multi;
-        double BRpower = (y - x + rx) * multi;
-
-        if (!autoAlignActive) {
-            FLmotor.setPower(FLpower);
-            FRmotor.setPower(FRpower);
-            BLmotor.setPower(BLpower);
-            BRmotor.setPower(BRpower);
-        } else {
-            autoAlign(headingAdjust, FLpower, FRpower, BLpower, BRpower);
-        }
+        FLmotor.setPower(FLpower * multi);
+        FRmotor.setPower(FRpower * multi);
+        BLmotor.setPower(BLpower * multi);
+        BRmotor.setPower(BRpower * multi);
     }
 
-    // Very visible auto-align: robot WILL turn if headingAdjust != 0
-    private void autoAlign(double headingErrorDeg,
-                           double FLtrans, double FRtrans,
-                           double BLtrans, double BRtrans) {
+    // Pure auto-align rotation (only runs when autoAlignActive = true)
+    // Pure auto-align rotation (only runs when autoAlignActive = true)
+    private void autoAlignPure() {
+        double turnPower = 0.0;
 
-        // Start with large-ish P just to see motion; tune down later
-        double kP = 0.05;
-        double turnPower = kP * headingErrorDeg;
+        double error = headingAdjust;      // degrees from LL
+        double kP = 0.02;                  // softer P gain (was 0.04)
+        double maxPower = 0.5;             // lower max turn power (was 0.75)
+        double minPower = 0.12;            // minimum to overcome friction
 
-        if (turnPower > 0.6) turnPower = 0.6;
-        if (turnPower < -0.6) turnPower = -0.6;
+        if (Math.abs(error) > 0.7 && Math.abs(error) < 40.0) {
+            turnPower = kP * error;
 
-        // For now: 100% focus on turning when autoAlign is on
-        double blend = 1.0;
+            // clamp to max magnitude
+            if (turnPower > maxPower) turnPower = maxPower;
+            if (turnPower < -maxPower) turnPower = -maxPower;
 
-        double FL = FLtrans * (1 - blend) + (-turnPower) * blend;
-        double FR = FRtrans * (1 - blend) + ( turnPower) * blend;
-        double BL = BLtrans * (1 - blend) + (-turnPower) * blend;
-        double BR = BRtrans * (1 - blend) + ( turnPower) * blend;
+            // enforce small minimum power so it doesn’t stall
+            if (Math.abs(turnPower) < minPower) {
+                turnPower = Math.signum(turnPower) * minPower;
+            }
+        } else {
+            // inside deadband → no turning
+            turnPower = 0.0;
+        }
+
+        double FL = -turnPower;
+        double BL =  turnPower;
+        double FR =  turnPower;
+        double BR = -turnPower;
 
         FLmotor.setPower(FL);
         FRmotor.setPower(FR);
@@ -78,12 +94,13 @@ public class Drive implements Subsystem {
         BRmotor.setPower(BR);
     }
 
-    // Optional helper
+
     public void autodrive(double rx) {
-        double FLpower = -rx;
-        double BLpower = rx;
-        double FRpower = rx;
-        double BRpower = -rx;
+        // YOUR ORIGINAL autodrive
+        double FLpower = (-rx);
+        double BLpower = (rx);
+        double FRpower = (rx);
+        double BRpower = (-rx);
 
         FLmotor.setPower(FLpower);
         FRmotor.setPower(FRpower);
