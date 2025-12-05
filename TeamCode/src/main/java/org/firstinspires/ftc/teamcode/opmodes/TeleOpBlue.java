@@ -39,7 +39,7 @@ public class TeleOpBlue extends NextFTCOpMode {
         );
 
         // DPAD UP = AUTO ALIGN
-        button(() -> gamepad2.dpad_up).whenBecomesTrue(() -> {
+        button(() -> gamepad2.left_bumper).whenBecomesTrue(() -> {
             if (tagVisible) {
                 routines.autoAlignOnly().schedule();
             } else {
@@ -48,7 +48,7 @@ public class TeleOpBlue extends NextFTCOpMode {
         });
 
         // DPAD DOWN = SHOOT SEQUENCE
-        button(() -> gamepad2.dpad_down).whenBecomesTrue(() -> {
+        button(() -> gamepad2.right_bumper).whenBecomesTrue(() -> {
             if (tagVisible) {
                 routines.testoutSequence().schedule();
             } else {
