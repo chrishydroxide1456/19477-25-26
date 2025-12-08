@@ -1,28 +1,24 @@
 package org.firstinspires.ftc.teamcode.commandbase;
 
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAdjust;
-
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.LL;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Drive;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
-
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import dev.nextftc.core.commands.Command;
-import dev.nextftc.core.commands.delays.Delay;
-import dev.nextftc.core.commands.groups.ParallelGroup;
-import dev.nextftc.core.commands.groups.SequentialGroup;
+import dev.nextftc.core.commands.groups.*;
 
 public class Routines {
+    private final Intake intake;
+    private final Outtake outtake;
+    private final LL ll;
+    private final Drive drive;
 
-//    private Intake intake = Intake.INSTANCE;
-//    private Outtake outtake = Outtake.INSTANCE;
-//    private LL ll = LL.INSTANCE;
-//    private Drive drive = Drive.INSTANCE;
-
-    private Intake intake;
-    private Outtake outtake;
-    private LL ll;
-    private Drive drive;
+    // Timing constants
+    private static final long FLYWHEEL_SPINUP_MS = 750;
+    private static final long INTAKE_REVERSE_START_MS = 1300;
+    private static final long INTAKE_STOP_MS = 1500;          // NEW: Stop 150ms after reversing starts
+    private static final long GATE_OPEN_MS = 1300;
+    private static final long INTAKE_FORWARD_START_MS = 1700;  // 250ms pause (1700 - 1450 = 250ms)
+    private static final long SEQUENCE_DURATION_MS = 3250;
+    private static final double HEADING_TOLERANCE = 0.7;
+    private static final long ALIGN_TIMEOUT_MS = 3000;
 
     public Routines(Intake intake, Outtake outtake, LL ll, Drive drive) {
         this.intake = intake;
@@ -31,78 +27,187 @@ public class Routines {
         this.drive = drive;
     }
 
-    public Command outSequence() { //currently is a little sketch for if robot isn't stationary when starting this sequence because adjusting only runs at the beginning
-        return new ParallelGroup(
-                robotadjust,
-                outtake.on,
-                new ParallelGroup(
-                        new SequentialGroup(
-                                new Delay(3.0),
-                                outtake.open
-                        ),
-                        new SequentialGroup(
-                                new Delay(6.0),
-                                new ParallelGroup(
-                                        outtake.close,
-                                        outtake.off
-                                        //need a way to turn adjust off while letting it continue while moving/shooting
-                                )
-                        )
-                )
-        );
+    public Command autoAlignOnly() {
+        return new Command() {
+            private long startTime;
+
+            @Override
+            public void start() {
+                drive.startAutoAlign();
+                startTime = System.currentTimeMillis();
+            }
+
+            @Override
+            public boolean isDone() {
+                long elapsed = System.currentTimeMillis() - startTime;
+                boolean aligned = Math.abs(LL.headingAdjust) <= HEADING_TOLERANCE;
+                boolean timeout = elapsed > ALIGN_TIMEOUT_MS;
+
+                return (aligned && LL.tagVisible) || timeout;
+            }
+
+            @Override
+            public void stop(boolean interrupted) {
+                drive.stopAutoAlign();
+            }
+        };
     }
-    public Command robotadjust = new Command() {
 
-        @Override
-        public void start() {
-            ll.adjust();
-            //drive.autodrivecmd.start();
-            drive.autodrive(headingAdjust);
-        }
+    public Command testoutSequence() {
+        return new Command() {
+            private long sequenceStart = 0;
+            private boolean gateOpened = false;
+            private boolean intakeReversed = false;
+            private boolean intakeStopped = false;      // NEW: Track when we stop
+            private boolean intakeForwarded = false;
 
-        @Override
-        public boolean isDone() {
-            //return headingAdjust < 0.04; //like 2.3 degrees
-            return false;
-        }
+            @Override
+            public void start() {
+                if (!LL.tagVisible) {
+                    return;
+                }
 
-        @Override
-        public void update() {
-            ll.adjust();
-            //drive.autodrivecmd.start();
-            drive.autodrive(headingAdjust);
-        }
+                // Stop spin servos immediately
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
 
-    };
+                Outtake.shooting = true;
+                sequenceStart = System.currentTimeMillis();
+                gateOpened = false;
+                intakeReversed = false;
+                intakeStopped = false;      // NEW
+                intakeForwarded = false;
+            }
+
+            @Override
+            public void update() {
+                long elapsed = System.currentTimeMillis() - sequenceStart;
+
+                // Reverse intake at 1300ms AND spin servos backward
+                if (elapsed > INTAKE_REVERSE_START_MS && !intakeReversed) {
+                    Intake.INSTANCE.revmoving.schedule();
+                    outtake.spinServo1.setPower(-1.0);
+                    outtake.spinServo2.setPower(-1.0);
+                    intakeReversed = true;
+                }
+
+                // NEW: Stop everything at 1450ms (150ms of reversing)
+                if (elapsed > INTAKE_STOP_MS && !intakeStopped) {
+                    Intake.INSTANCE.off.schedule();
+                    outtake.spinServo1.setPower(0);
+                    outtake.spinServo2.setPower(0);
+                    intakeStopped = true;
+                }
+
+                // Open gate at 1300ms
+                if (elapsed > GATE_OPEN_MS && !gateOpened) {
+                    Outtake.INSTANCE.open.schedule();
+                    gateOpened = true;
+                }
+
+                // Start intake forward at 1700ms (250ms pause after stopping)
+                if (elapsed > INTAKE_FORWARD_START_MS && !intakeForwarded) {
+                    Intake.INSTANCE.onmoving.schedule();
+                    outtake.spinServo1.setPower(0);
+                    outtake.spinServo2.setPower(0);
+                    intakeForwarded = true;
+                }
+
+                // Complete sequence at 3250ms
+                if (elapsed > SEQUENCE_DURATION_MS) {
+                    Outtake.INSTANCE.close.schedule();
+                    Intake.INSTANCE.off.schedule();
+                    outtake.spinServo1.setPower(0);
+                    outtake.spinServo2.setPower(0);
+                    Outtake.shooting = false;
+                }
+            }
+
+            @Override
+            public boolean isDone() {
+                return System.currentTimeMillis() - sequenceStart > SEQUENCE_DURATION_MS;
+            }
+
+            @Override
+            public void stop(boolean interrupted) {
+                Outtake.shooting = false;
+                Outtake.INSTANCE.close.schedule();
+                Intake.INSTANCE.off.schedule();
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
+            }
+        };
+    }
+
+    public Command fullOuttakeSequence() {
+        return testoutSequence();
+    }
 
     public Command inSequence() {
-            return new ParallelGroup(
-                    intake.on,
-                    outtake.reverse
-            );
+        return new Command() {
+            private long startTime = 0;
+            private boolean servosStarted = false;
+
+            @Override
+            public void start() {
+                drive.setMulti(0.58);
+                intake.on.schedule();
+                startTime = System.currentTimeMillis();
+                servosStarted = false;
+            }
+
+            @Override
+            public void update() {
+                long elapsed = System.currentTimeMillis() - startTime;
+
+                // Start spin servos after 400ms delay
+                if (elapsed > 400 && !servosStarted) {
+                    outtake.spinServo1.setPower(-1.0);
+                    outtake.spinServo2.setPower(-1.0);
+                    servosStarted = true;
+                }
+            }
+
+            @Override
+            public boolean isDone() {
+                return false;  // Keep running
+            }
+        };
     }
 
-    public Command inSequencemoving() {
-        return new ParallelGroup(
-                intake.onmoving,
-                outtake.reverse
-        );
+    public Command stopinSequence() {
+        return new Command() {
+            @Override
+            public void start() {
+                drive.setMulti(1.0);
+                intake.keeping.schedule();
+                // Stop spin servos
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
+            }
+
+            @Override
+            public boolean isDone() {
+                return true;
+            }
+        };
     }
 
-    public Command outtaketest1() {
-        return new ParallelGroup(
-                outtake.teston2000,
-                new Delay(3.0),
-                outtake.testoff
-        );
-    }
+    public Command stopReverseSequence() {
+        return new Command() {
+            @Override
+            public void start() {
+                drive.setMulti(1.0);
+                intake.off.schedule();
+                // Stop spin servos
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
+            }
 
-    public Command outtaketest2() {
-        return new ParallelGroup(
-                outtake.teston4000,
-                new Delay(3.0),
-                outtake.testoff
-        );
+            @Override
+            public boolean isDone() {
+                return true;
+            }
+        };
     }
-
 }
