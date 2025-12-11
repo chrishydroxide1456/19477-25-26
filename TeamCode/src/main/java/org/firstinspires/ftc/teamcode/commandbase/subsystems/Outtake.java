@@ -16,6 +16,7 @@ public class Outtake implements Subsystem {
 
     public static boolean shooting = false;
 
+    public static boolean spinup = false;
     public final MotorEx Tmotor = new MotorEx("Tmotor").reversed();
     public final MotorEx Bmotor = new MotorEx("Bmotor");
     private Servo gateServo;

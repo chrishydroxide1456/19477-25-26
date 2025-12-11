@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedro;
 
+import com.pedropathing.control.FilteredPIDFCoefficients;
+import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -14,12 +16,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass() //need to find
-            .forwardZeroPowerAcceleration() //need to find
-            .lateralZeroPowerAcceleration() //need to find
-            .useSecondaryTranslationalPIDF(true) //staying on path
-            .useSecondaryHeadingPIDF(true)
-            .useSecondaryDrivePIDF(true) //progress in path
+            .mass(11.2)
+            .forwardZeroPowerAcceleration(-27.8)
+            .lateralZeroPowerAcceleration(-72.3)
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.08, 0, 0.007, 0.01))
+            .headingPIDFCoefficients(new PIDFCoefficients(1.2, 0, 0.09, 0.01))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.004, 0, 0.001, 0.7, 0.0))
+//            .useSecondaryTranslationalPIDF(true) //staying on path
+//            .useSecondaryHeadingPIDF(true)
+//            .useSecondaryDrivePIDF(true) //progress in path
             ;
 
     public static MecanumConstants driveConstants = new MecanumConstants()
@@ -31,20 +36,19 @@ public class Constants {
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE) //need to confirm directions later
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .xVelocity() //need to tune (automatic)
-            .yVelocity(); //need to tune (automatic)
+            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .xVelocity(50.6)
+            .yVelocity(32.6);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY() //need to find
-            .strafePodX() //need to find
             .distanceUnit(DistanceUnit.INCH)
-            .hardwareMapName("pinpoint") //need to set
-            .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD) //either 4_BAR_POD or SWINGARM, need to confirm
-            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD) //need to confirm
+            .hardwareMapName("pinpoint") //is this set?
+            .forwardPodY(1.5)
+            .strafePodX(-4.5)
+            .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
-    //check localizer tuning here: https://pedropathing.com/docs/pathing/tuning/localization#localization-test
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 

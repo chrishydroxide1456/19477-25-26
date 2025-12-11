@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
+import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
+
+import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.subsystems.Subsystem;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -31,6 +34,8 @@ public class LL implements Subsystem {
     private long lastDetectionTime = 0;
     private static final long DETECTION_TIMEOUT_MS = 500;
 
+    private static boolean seeATag;
+
     public void initialize(HardwareMap hardwareMap) {
         headingAdjust = 0.0;
         distance = 36.0f;
@@ -45,22 +50,27 @@ public class LL implements Subsystem {
 
     @Override
     public void periodic() {
-        adjust();
+        if (!overriding) {
+            adjust();
+        } else {
+            targetVel = 1200.0;
+            Outtake.shooting = true;
+        }
+
     }
 
-    public void setID() {
-        LLResult llresult = limelight.getLatestResult();
-        if (llresult != null && llresult.getFiducialResults() != null && !llresult.getFiducialResults().isEmpty()) {
-            ID = llresult.getFiducialResults().get(0).getFiducialId();
-        }
-    }
+//    public void setID() {
+//        LLResult llresult = limelight.getLatestResult();
+//        if (llresult != null && llresult.getFiducialResults() != null && !llresult.getFiducialResults().isEmpty()) {
+//            ID = llresult.getFiducialResults().get(0).getFiducialId();
+//        }
+//    }
 
     public void adjust() {
         LLResult llresult = limelight.getLatestResult();
         long currentTime = System.currentTimeMillis();
 
         if (llresult != null && llresult.getFiducialResults() != null && !llresult.getFiducialResults().isEmpty()) {
-
             // **KEY CHANGE**: Find the tag that matches our target ID
             LLResultTypes.FiducialResult targetTag = null;
             for (LLResultTypes.FiducialResult fidResult : llresult.getFiducialResults()) {
@@ -87,7 +97,7 @@ public class LL implements Subsystem {
                 if (Math.abs(Math.tan(angleToGoalRad)) > 1e-6) {
                     double distInches = (GOAL_HEIGHT_IN - LIMELIGHT_HEIGHT_IN) / Math.tan(angleToGoalRad);
                     if (!Double.isNaN(distInches) && !Double.isInfinite(distInches) && distInches > 0) {
-                        rawDistance = (float) Math.max(12.0, Math.min(120.0, distInches));
+                        rawDistance = (float) Math.max(12.0, Math.min(120.0, distInches)); //this might be sketch
                     }
                 }
 
@@ -157,12 +167,13 @@ public class LL implements Subsystem {
         double Vball = Math.sqrt(numerator / (2.0 * cosAngle * cosAngle * denom));
 
         // Account for energy loss (flywheel to ball efficiency)
-        double Vwheel = Vball / 0.61;
+        double Vwheel = Vball / 0.628;
 
         // Convert linear velocity (m/s) to RPM
         double rpm = (Vwheel / (2.0 * Math.PI * flywheelR)) * 60.0;
 
         // Clamp to motor limits
-        return Math.max(800, Math.min(2800, rpm));
+        return Math.max(800, Math.min(2800, rpm)); //this might be sketch
     }
+
 }

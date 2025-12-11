@@ -10,13 +10,15 @@ public class Routines {
     private final LL ll;
     private final Drive drive;
 
+    public static boolean overriding = false;
+
     // Timing constants
     private static final long FLYWHEEL_SPINUP_MS = 750;
-    private static final long INTAKE_REVERSE_START_MS = 1300;
-    private static final long INTAKE_STOP_MS = 1500;          // NEW: Stop 150ms after reversing starts
-    private static final long GATE_OPEN_MS = 1300;
-    private static final long INTAKE_FORWARD_START_MS = 1700;  // 250ms pause (1700 - 1450 = 250ms)
-    private static final long SEQUENCE_DURATION_MS = 3250;
+    private static final long INTAKE_REVERSE_START_MS = 1300-800;
+    private static final long INTAKE_STOP_MS = 1500-800;          // NEW: Stop 150ms after reversing starts
+    private static final long GATE_OPEN_MS = 1300-800;
+    private static final long INTAKE_FORWARD_START_MS = 1700-800;  // 250ms pause (1700 - 1450 = 250ms)
+    private static final long SEQUENCE_DURATION_MS = 3250-800;
     private static final double HEADING_TOLERANCE = 0.7;
     private static final long ALIGN_TIMEOUT_MS = 3000;
 
@@ -54,6 +56,8 @@ public class Routines {
     }
 
     public Command testoutSequence() {
+        overriding = false;
+
         return new Command() {
             private long sequenceStart = 0;
             private boolean gateOpened = false;

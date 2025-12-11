@@ -1,9 +1,6 @@
 
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.*;
-import static dev.nextftc.bindings.Bindings.button;
-
 import dev.nextftc.core.components.*;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
@@ -14,7 +11,7 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous
-public class AutoBlue extends NextFTCOpMode {
+public class Auto extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;

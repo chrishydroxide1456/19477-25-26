@@ -3,6 +3,10 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.*;
 import static dev.nextftc.bindings.Bindings.button;
 
+import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
+import com.qualcomm.robotcore.hardware.Gamepad;
+
+import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.components.*;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
@@ -21,7 +25,7 @@ public class TeleOpBlue extends NextFTCOpMode {
 
     @Override
     public void onInit() {
-        LL.ID = 20;
+        LL.ID = 24;
         Drive.INSTANCE.stopAutoAlign();
 
         intake = Intake.INSTANCE;
@@ -50,11 +54,19 @@ public class TeleOpBlue extends NextFTCOpMode {
         // DPAD DOWN = SHOOT SEQUENCE
         button(() -> gamepad2.right_bumper).whenBecomesTrue(() -> {
             if (tagVisible) {
+                overriding = false;
+                Outtake.shooting = false;
                 routines.testoutSequence().schedule();
-            } else {
-                gamepad2.rumble(100); // Haptic feedback for no target
             }
+//            else {
+//                gamepad2.rumble(100); // Haptic feedback for no target
+//            }
         });
+
+        // A = prep spin up
+        button(() -> gamepad2.y).toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> overriding = true)
+                .whenBecomesFalse(() -> overriding = false);
 
         // A = intake toggle
         button(() -> gamepad2.a).toggleOnBecomesTrue()
@@ -74,6 +86,10 @@ public class TeleOpBlue extends NextFTCOpMode {
             // Calculate what the RPM SHOULD be
             double calculatedRPM = ll.gettargetVel(distance);
 
+            if (!Outtake.spinup && !Outtake.shooting) {
+                gamepad2.rumble(0.0, 1.0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+            }
+
             telemetry.addLine("=== SHOOT SYSTEM ===");
             telemetry.addData("Distance", "%.1f in", distance);
             telemetry.addData("Calculated RPM", "%.0f", calculatedRPM);
@@ -88,5 +104,7 @@ public class TeleOpBlue extends NextFTCOpMode {
             telemetry.addData("Limelight", "No AprilTag visible");
         }
         telemetry.update();
+
     }
+
 }
