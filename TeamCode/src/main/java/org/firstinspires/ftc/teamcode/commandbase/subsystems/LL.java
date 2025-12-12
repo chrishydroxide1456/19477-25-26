@@ -97,7 +97,7 @@ public class LL implements Subsystem {
                 if (Math.abs(Math.tan(angleToGoalRad)) > 1e-6) {
                     double distInches = (GOAL_HEIGHT_IN - LIMELIGHT_HEIGHT_IN) / Math.tan(angleToGoalRad);
                     if (!Double.isNaN(distInches) && !Double.isInfinite(distInches) && distInches > 0) {
-                        rawDistance = (float) Math.max(12.0, Math.min(120.0, distInches)); //this might be sketch
+                        rawDistance = (float) Math.max(12.0, distInches); //Math.min this might be sketch
                     }
                 }
 
@@ -173,7 +173,7 @@ public class LL implements Subsystem {
         double rpm = (Vwheel / (2.0 * Math.PI * flywheelR)) * 60.0;
 
         // Clamp to motor limits
-        return Math.max(800, Math.min(2800, rpm)); //this might be sketch
+        return Math.max(800, rpm); //Math.min this might be sketch
     }
 
 }
