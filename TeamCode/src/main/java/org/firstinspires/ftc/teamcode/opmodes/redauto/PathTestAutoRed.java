@@ -1,6 +1,14 @@
-package org.firstinspires.ftc.teamcode.opmodes.blueauto;
+package org.firstinspires.ftc.teamcode.opmodes.redauto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.Drive;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.LL;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake;
+import org.firstinspires.ftc.teamcode.opmodes.TrajectoryFactory;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
+
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.commands.groups.SequentialGroup;
@@ -9,15 +17,9 @@ import dev.nextftc.extensions.pedro.FollowPath;
 import dev.nextftc.extensions.pedro.PedroComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
-import org.firstinspires.ftc.teamcode.opmodes.TrajectoryFactory;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Drive;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.LL;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake;
-import org.firstinspires.ftc.teamcode.pedro.Constants;
 
-@Autonomous(name = "🔵 Path Test - 9 Ball Route", group = "Test", preselectTeleOp = "TeleOpBlue")
-public class PathTestAuto extends NextFTCOpMode {
+@Autonomous(name = "🔴 Red Path Test - 9 Ball Route", group = "Test", preselectTeleOp = "TeleOpRed")
+public class PathTestAutoRed extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
@@ -25,7 +27,7 @@ public class PathTestAuto extends NextFTCOpMode {
     private Drive drive;
 
     // Constructor - this is where components should be added (like Kotlin's init block)
-    public PathTestAuto() {
+    public PathTestAutoRed() {
         // Initialize subsystems
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
@@ -47,10 +49,10 @@ public class PathTestAuto extends NextFTCOpMode {
         ll.initialize(hardwareMap);
 
         // Build trajectories for blue alliance (follower is now initialized)
-        TrajectoryFactory.buildTrajectories(PedroComponent.follower(), false);
+        TrajectoryFactory.buildTrajectories(PedroComponent.follower(), true);
 
         // Set starting pose
-        PedroComponent.follower().setStartingPose(TrajectoryFactory.goalStartPos);
+        PedroComponent.follower().setStartingPose(TrajectoryFactory.goalStartPos.mirror());
 
         telemetry.addLine("✅ Path Test Initialized");
         telemetry.addData("Starting Pose", TrajectoryFactory.goalStartPos);

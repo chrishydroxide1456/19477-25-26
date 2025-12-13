@@ -117,9 +117,9 @@ public class TeleOpRed extends NextFTCOpMode {
             // Calculate what the RPM SHOULD be
             double calculatedRPM = ll.gettargetVel(distance);
 
-            if (!Outtake.spinup && !Outtake.shooting) {
-                gamepad2.rumble(0.0, 1.0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-            }
+//            if (!Outtake.spinup && !Outtake.shooting) {
+//                gamepad2.rumble(0.0, 1.0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+//            }
 
             telemetry.addLine("=== SHOOT SYSTEM ===");
             telemetry.addData("Distance", "%.1f in", distance);

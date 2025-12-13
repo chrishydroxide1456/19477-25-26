@@ -1,21 +1,27 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.*;
+import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.distance;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAdjust;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.tagVisible;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.targetVel;
 import static dev.nextftc.bindings.Bindings.button;
 
-import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import dev.nextftc.core.commands.utility.InstantCommand;
-import dev.nextftc.core.components.*;
+import org.firstinspires.ftc.teamcode.commandbase.Routines;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.Drive;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.LL;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake;
+
+import dev.nextftc.core.components.BindingsComponent;
+import dev.nextftc.core.components.SubsystemComponent;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 
-import org.firstinspires.ftc.teamcode.commandbase.Routines;
-import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
-
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
-public class TeleOpBlue extends NextFTCOpMode {
+public class TeleOpSolo extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
@@ -25,7 +31,7 @@ public class TeleOpBlue extends NextFTCOpMode {
 
     @Override
     public void onInit() {
-        LL.ID = 20;
+        LL.ID = 24;
         Drive.INSTANCE.stopAutoAlign();
 
         intake = Intake.INSTANCE;
@@ -80,20 +86,20 @@ public class TeleOpBlue extends NextFTCOpMode {
 
     @Override
     public void onUpdate() {
-        if (gamepad1.right_trigger > 0.1) {
+        if (gamepad2.right_trigger > 0.1) {
             drive.setMulti(0.58); // Slow mode
         } else {
             drive.setMulti(1.0);  // Normal speed
         }
         // Manual trigger-based turning for fine adjustments
-        double triggerTurn = (gamepad2.left_trigger - gamepad2.right_trigger) * 0.55;
+        double triggerTurn = (gamepad1.left_trigger - gamepad1.right_trigger) * 0.55;
 
         // Create modified gamepad with trigger turning added
         if (Math.abs(triggerTurn) > 0.05) {
             // Apply trigger turning by directly controlling motors
-            double y = -gamepad1.left_stick_y;
-            double x = -gamepad1.left_stick_x;
-            double rx = -gamepad1.right_stick_x + triggerTurn; // Add trigger turning
+            double y = -gamepad2.left_stick_y;
+            double x = -gamepad2.left_stick_x;
+            double rx = -gamepad2.right_stick_x + triggerTurn; // Add trigger turning
 
             double FLpower = (-y + x + rx) * Drive.multi;
             double BLpower = (y + x - rx) * Drive.multi;
@@ -106,7 +112,7 @@ public class TeleOpBlue extends NextFTCOpMode {
             Drive.INSTANCE.BRmotor.setPower(BRpower);
         } else {
             // Normal driving
-            drive.driverdrive(gamepad1);
+            drive.driverdrive(gamepad2);
         }
 
         // Get current motor RPMs
@@ -117,9 +123,9 @@ public class TeleOpBlue extends NextFTCOpMode {
             // Calculate what the RPM SHOULD be
             double calculatedRPM = ll.gettargetVel(distance);
 
-//            if (!Outtake.spinup && !Outtake.shooting) {
-//                gamepad2.rumble(0.0, 1.0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-//            }
+            if (!Outtake.spinup && !Outtake.shooting) {
+                gamepad2.rumble(0.0, 1.0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+            }
 
             telemetry.addLine("=== SHOOT SYSTEM ===");
             telemetry.addData("Distance", "%.1f in", distance);

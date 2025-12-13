@@ -69,9 +69,14 @@ public class Outtake implements Subsystem {
     @Override
     public void periodic() {
         // Update local target velocity for gradual spindown
-        if (shooting && targetVel > 0.0) {
-            localTargetVel = targetVel;
+        if (shooting) {
+            // When shooting, capture targetVel if it's valid
+            if (targetVel > 0.0) {
+                localTargetVel = targetVel;
+            }
+            // Keep using localTargetVel even if targetVel drops to 0 during shooting
         } else if (localTargetVel > 0) {
+            // Gradual spindown when not shooting
             localTargetVel -= SPINDOWN_RATE;
             if (localTargetVel < 0) {
                 localTargetVel = 0;
