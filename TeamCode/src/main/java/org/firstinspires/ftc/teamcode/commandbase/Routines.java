@@ -154,7 +154,7 @@ public class Routines {
 
             @Override
             public void start() {
-                drive.setMulti(0.58);
+                //drive.setMulti(0.58);
                 intake.on.schedule();
                 startTime = System.currentTimeMillis();
                 servosStarted = false;
@@ -183,7 +183,7 @@ public class Routines {
         return new Command() {
             @Override
             public void start() {
-                drive.setMulti(1.0);
+                //drive.setMulti(1.0);
                 intake.keeping.schedule();
                 // Stop spin servos
                 outtake.spinServo1.setPower(0);
@@ -201,7 +201,7 @@ public class Routines {
         return new Command() {
             @Override
             public void start() {
-                drive.setMulti(1.0);
+                //drive.setMulti(1.0);
                 intake.off.schedule();
                 // Stop spin servos
                 outtake.spinServo1.setPower(0);

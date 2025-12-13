@@ -80,7 +80,34 @@ public class TeleOpBlue extends NextFTCOpMode {
 
     @Override
     public void onUpdate() {
-        drive.driverdrive(gamepad2);
+        if (gamepad1.right_trigger > 0.1) {
+            drive.setMulti(0.58); // Slow mode
+        } else {
+            drive.setMulti(1.0);  // Normal speed
+        }
+        // Manual trigger-based turning for fine adjustments
+        double triggerTurn = (gamepad2.left_trigger - gamepad2.right_trigger) * 0.55;
+
+        // Create modified gamepad with trigger turning added
+        if (Math.abs(triggerTurn) > 0.05) {
+            // Apply trigger turning by directly controlling motors
+            double y = -gamepad1.left_stick_y;
+            double x = -gamepad1.left_stick_x;
+            double rx = -gamepad1.right_stick_x + triggerTurn; // Add trigger turning
+
+            double FLpower = (-y + x + rx) * Drive.multi;
+            double BLpower = (y + x - rx) * Drive.multi;
+            double FRpower = (-y - x - rx) * Drive.multi;
+            double BRpower = (y - x + rx) * Drive.multi;
+
+            Drive.INSTANCE.FLmotor.setPower(FLpower);
+            Drive.INSTANCE.FRmotor.setPower(FRpower);
+            Drive.INSTANCE.BLmotor.setPower(BLpower);
+            Drive.INSTANCE.BRmotor.setPower(BRpower);
+        } else {
+            // Normal driving
+            drive.driverdrive(gamepad1);
+        }
 
         if (tagVisible) {
             // Calculate what the RPM SHOULD be

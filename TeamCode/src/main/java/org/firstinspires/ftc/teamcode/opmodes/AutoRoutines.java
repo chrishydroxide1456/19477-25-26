@@ -1,0 +1,273 @@
+package org.firstinspires.ftc.teamcode.opmodes;
+
+import com.pedropathing.follower.Follower;
+import dev.nextftc.core.commands.Command;
+import dev.nextftc.core.commands.delays.Delay;
+import dev.nextftc.core.commands.groups.ParallelGroup;
+import dev.nextftc.core.commands.groups.SequentialGroup;
+import dev.nextftc.extensions.pedro.FollowPath;
+import org.firstinspires.ftc.teamcode.commandbase.Routines;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.opmodes.TrajectoryFactory;
+
+public class AutoRoutines {
+
+    private final Routines routines;
+    private final Intake intake;
+
+    public AutoRoutines(Routines routines, Intake intake) {
+        this.routines = routines;
+        this.intake = intake;
+    }
+
+    /**
+     * 3-ball autonomous: Score preload only
+     */
+    public Command threeBallAuto() {
+        return new SequentialGroup(
+                // Drive from goal start directly to score position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.goalToScore, true),
+                        intake.keeping  // Keep intake holding while driving
+                ),
+
+                // Align and shoot
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence()
+        );
+    }
+
+    /**
+     * 6-ball autonomous: Score preload + first row of samples
+     */
+    public Command sixBallAuto() {
+        return new SequentialGroup(
+                //region First volley (preload)
+                // Drive from goal start directly to score position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.goalToScore, true),
+                        intake.keeping
+                ),
+
+                // Align and shoot first volley
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence(),
+                //endregion
+
+                //region Second volley (spike mark 1)
+                // Drive to spike mark 1 and start intaking
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.scoreToSpikeMark1, true),
+                        routines.inSequence()  // Turn on intake
+                ),
+
+                // Drive through all three balls to end position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark1ToEnd, true),
+                        intake.on  // Keep intake running
+                ),
+
+                // Drive back to score with intake keeping
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark1EndToScore, true),
+                        intake.keeping
+                ),
+
+                // Align and shoot second volley
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence(),
+                //endregion
+
+                // Park
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.scoreToOutOfTheWay, true),
+                        intake.keeping
+                ),
+
+                routines.stopinSequence()
+        );
+    }
+
+    /**
+     * 9-ball autonomous: Score preload + two rows of samples
+     */
+    public Command nineBallAuto() {
+        return new SequentialGroup(
+                //region First volley (preload)
+                // Drive from goal start directly to score position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.goalToScore, true),
+                        intake.keeping
+                ),
+
+                // Align and shoot first volley
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence(),
+                //endregion
+
+                //region Second volley (spike mark 1)
+                // Drive to spike mark 1 and start intaking
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.scoreToSpikeMark1, true),
+                        routines.inSequence()
+                ),
+
+                // Drive through all three balls to end position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark1ToEnd, true),
+                        intake.on
+                ),
+
+                // Drive back to score with intake keeping
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark1EndToScore, true),
+                        intake.keeping
+                ),
+
+                // Align and shoot second volley
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence(),
+                //endregion
+
+                //region Third volley (spike mark 2)
+                // Drive to spike mark 2 and start intaking
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.scoreToSpikeMark2, true),
+                        routines.inSequence()
+                ),
+
+                // Drive through all three balls to end position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark2ToEnd, true),
+                        intake.on
+                ),
+
+                // Drive back to score with intake keeping
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark2EndToScore, true),
+                        intake.keeping
+                ),
+
+                // Align and shoot third volley
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence(),
+                //endregion
+
+                // Park
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.scoreToOutOfTheWay, true),
+                        intake.keeping
+                ),
+
+                routines.stopinSequence()
+        );
+    }
+
+    /**
+     * 12-ball autonomous: Score preload + all three rows of samples
+     */
+    public Command twelveBallAuto() {
+        return new SequentialGroup(
+                //region First volley (preload)
+                // Drive from goal start directly to score position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.goalToScore, true),
+                        intake.keeping
+                ),
+
+                // Align and shoot first volley
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence(),
+                //endregion
+
+                //region Second volley (spike mark 1)
+                // Drive to spike mark 1 and start intaking
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.scoreToSpikeMark1, true),
+                        routines.inSequence()
+                ),
+
+                // Drive through all three balls to end position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark1ToEnd, true),
+                        intake.on
+                ),
+
+                // Drive back to score with intake keeping
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark1EndToScore, true),
+                        intake.keeping
+                ),
+
+                // Align and shoot second volley
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence(),
+                //endregion
+
+                //region Third volley (spike mark 2)
+                // Drive to spike mark 2 and start intaking
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.scoreToSpikeMark2, true),
+                        routines.inSequence()
+                ),
+
+                // Drive through all three balls to end position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark2ToEnd, true),
+                        intake.on
+                ),
+
+                // Drive back to score with intake keeping
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark2EndToScore, true),
+                        intake.keeping
+                ),
+
+                // Align and shoot third volley
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence(),
+                //endregion
+
+                //region Fourth volley (spike mark 3)
+                // Drive to spike mark 3 and start intaking
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.scoreToSpikeMark3, true),
+                        routines.inSequence()
+                ),
+
+                // Drive through all three balls to end position
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark3ToEnd, true),
+                        intake.on
+                ),
+
+                // Drive back to score with intake keeping
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark3EndToScore, true),
+                        intake.keeping
+                ),
+
+                // Align and shoot fourth volley
+                routines.autoAlignOnly(),
+                routines.fullOuttakeSequence(),
+                //endregion
+
+                // Park
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.scoreToOutOfTheWay, true),
+                        intake.keeping
+                ),
+
+                routines.stopinSequence()
+        );
+    }
+
+    /**
+     * Simple park autonomous from far start position
+     */
+    public Command farParkAuto() {
+        return new SequentialGroup(
+                new FollowPath(TrajectoryFactory.farStartToPark, true)
+        );
+    }
+}
