@@ -109,6 +109,10 @@ public class TeleOpRed extends NextFTCOpMode {
             drive.driverdrive(gamepad1);
         }
 
+        // Get current motor RPMs
+        double TmotorRPM = outtake.Tmotor.getVelocity();
+        double BmotorRPM = outtake.Bmotor.getVelocity();
+
         if (tagVisible) {
             // Calculate what the RPM SHOULD be
             double calculatedRPM = ll.gettargetVel(distance);
@@ -119,16 +123,21 @@ public class TeleOpRed extends NextFTCOpMode {
 
             telemetry.addLine("=== SHOOT SYSTEM ===");
             telemetry.addData("Distance", "%.1f in", distance);
-            telemetry.addData("Calculated RPM", "%.0f", calculatedRPM);
-            telemetry.addData("Static targetVel", "%.0f RPM", targetVel);
-            telemetry.addData("Match?", calculatedRPM == targetVel ? "YES" : "NO!");
-            telemetry.addData("Power", "%.2f%%", (0.25 + (targetVel / 3000.0)) * 100);
+            telemetry.addData("Target RPM", "%.0f", targetVel);
+            telemetry.addData("Top Motor RPM", "%.0f", TmotorRPM);
+            telemetry.addData("Bottom Motor RPM", "%.0f", BmotorRPM);
+            telemetry.addData("Top Error", "%.0f RPM", targetVel - TmotorRPM);
+            telemetry.addData("Bottom Error", "%.0f RPM", targetVel - BmotorRPM);
             telemetry.addData("headingAdjust", "%.1f°", headingAdjust);
             telemetry.addData("AutoAlign", Drive.INSTANCE.isAutoAlignActive());
             telemetry.addData("Shooting", Outtake.shooting);
         } else {
             telemetry.addLine("=== NO TARGET ===");
             telemetry.addData("Limelight", "No AprilTag visible");
+            telemetry.addLine("");
+            telemetry.addLine("=== MOTOR STATUS ===");
+            telemetry.addData("Top Motor RPM", "%.0f", TmotorRPM);
+            telemetry.addData("Bottom Motor RPM", "%.0f", BmotorRPM);
         }
         telemetry.update();
 
