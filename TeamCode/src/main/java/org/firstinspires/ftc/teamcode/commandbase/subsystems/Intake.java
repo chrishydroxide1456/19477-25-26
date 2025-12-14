@@ -15,7 +15,7 @@ public class Intake implements Subsystem {
     public Command on = new SetPower(inmotor, 0.95).requires(this);
 
     public Command onmoving = new SetPower(inmotor, 0.65);
-    public Command autonshooting = new SetPower(inmotor, 0.61);
+    public Command autonshooting = new SetPower(inmotor, 0.63);
     public Command revmoving = new SetPower(inmotor, -0.9);
     public Command keeping = new SetPower(inmotor, 0.8);
     public Command off = new SetPower(inmotor, 0.0).requires(this);

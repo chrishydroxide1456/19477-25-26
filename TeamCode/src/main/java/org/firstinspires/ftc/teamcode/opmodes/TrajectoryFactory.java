@@ -24,8 +24,8 @@ public class TrajectoryFactory {
     public static Pose spikeMark2PosOuter = new Pose(26.6 - 6.6, 60.0, Math.toRadians(180));
 
     // Spike Mark 3 positions
-    public static Pose spikeMark3PosPre = new Pose(42.6 + 7, 35.6, Math.toRadians(180));
-    public static Pose spikeMark3PosOuter = new Pose(25.6 -7, 35.6, Math.toRadians(180));
+    public static Pose spikeMark3PosPre = new Pose(42.6 + 7, 35.3, Math.toRadians(180));
+    public static Pose spikeMark3PosOuter = new Pose(25.6 -8.3, 35.3, Math.toRadians(180));
 
     public static Pose outOfTheWayPos = new Pose(45.0, 128.0, Math.toRadians(180));
 
@@ -86,7 +86,7 @@ public class TrajectoryFactory {
                 .build();
 
         // Spike mark 1 pre to outer (end position)
-        spikeMark1ToEnd = follower.pathBuilder().setVelocityConstraint(25)
+        spikeMark1ToEnd = follower.pathBuilder()
                 .addPath(new BezierLine(spikeMark1PosPre, spikeMark1PosOuter))
                 .setLinearHeadingInterpolation(spikeMark1PosPre.getHeading(), spikeMark1PosOuter.getHeading())
                 .build();
@@ -108,7 +108,7 @@ public class TrajectoryFactory {
                 .build();
 
         // Spike mark 2 pre to outer (end position)
-        spikeMark2ToEnd = follower.pathBuilder().setVelocityConstraint(25)
+        spikeMark2ToEnd = follower.pathBuilder()
                 .addPath(new BezierLine(spikeMark2PosPre, spikeMark2PosOuter))
                 .setLinearHeadingInterpolation(spikeMark2PosPre.getHeading(), spikeMark2PosOuter.getHeading())
                 .build();
@@ -126,7 +126,7 @@ public class TrajectoryFactory {
                 .build();
 
         // Spike mark 3 pre to outer (end position)
-        spikeMark3ToEnd = follower.pathBuilder().setVelocityConstraint(25)
+        spikeMark3ToEnd = follower.pathBuilder()
                 .addPath(new BezierLine(spikeMark3PosPre, spikeMark3PosOuter))
                 .setLinearHeadingInterpolation(spikeMark3PosPre.getHeading(), spikeMark3PosOuter.getHeading())
                 .build();

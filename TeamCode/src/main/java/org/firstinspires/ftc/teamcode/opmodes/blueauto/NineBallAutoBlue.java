@@ -31,6 +31,11 @@ public class NineBallAutoBlue extends NextFTCOpMode {
     private static final long SHOOT_SEQUENCE_TIME = 2500;
     private static final long INTAKE_START_DELAY = 400;
 
+    // Shot velocities (tunable for each shot)
+    private static final double SHOT_1_VELOCITY = 1450.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 1465.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 1475.0;  // After spike mark 2
+
     private enum AutoState {
         IDLE,
         // First volley (preload)
@@ -93,13 +98,18 @@ public class NineBallAutoBlue extends NextFTCOpMode {
     public void onUpdate() {
         follower.update();
 
-        // Execute scheduled actions
+        // Execute scheduled actions with safety check
         long now = System.currentTimeMillis();
         Iterator<ScheduledAction> it = scheduledActions.iterator();
         while (it.hasNext()) {
             ScheduledAction action = it.next();
             if (now >= action.executeTime) {
-                action.action.run();
+                try {
+                    action.action.run();
+                } catch (Exception e) {
+                    // Log but continue if an action fails
+                    telemetry.addData("Action Error", e.getMessage());
+                }
                 it.remove();
             }
         }
@@ -159,9 +169,9 @@ public class NineBallAutoBlue extends NextFTCOpMode {
 
                 // START SPINNING UP MOTORS IMMEDIATELY DURING DRIVE
                 Outtake.shooting = true;
-                LL.targetVel = 1600.0;
-                outtake.Tmotor.setPower(0.85);  // Direct power backup
-                outtake.Bmotor.setPower(0.85);
+                LL.targetVel = SHOT_1_VELOCITY;
+//                outtake.Tmotor.setPower(0.85);  // Direct power backup
+//                outtake.Bmotor.setPower(0.85);
                 break;
 
             case SHOOT_1:
@@ -211,13 +221,16 @@ public class NineBallAutoBlue extends NextFTCOpMode {
 
                 // START SPINNING UP MOTORS DURING DRIVE BACK
                 Outtake.shooting = true;
-                if (LL.tagVisible) {
-                    LL.targetVel = ll.gettargetVel(LL.distance);
+
+                // Set velocity based on which shot
+                if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
+                    LL.targetVel = SHOT_2_VELOCITY;
                 } else {
-                    LL.targetVel = 1600.0;
+                    LL.targetVel = SHOT_3_VELOCITY;
                 }
-                outtake.Tmotor.setPower(0.85);  // Direct power backup
-                outtake.Bmotor.setPower(0.85);
+
+//                outtake.Tmotor.setPower(0.85);  // Direct power backup
+//                outtake.Bmotor.setPower(0.85);
 
                 // Start appropriate path
                 if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
@@ -239,13 +252,18 @@ public class NineBallAutoBlue extends NextFTCOpMode {
                 break;
 
             case COMPLETE:
-                intake.off.schedule();
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
-                outtake.Tmotor.setPower(0);
-                outtake.Bmotor.setPower(0);
-                LL.targetVel = 0.0;
-                Outtake.shooting = false;
+                // Stop all systems safely
+                try {
+                    intake.off.schedule();
+                    outtake.spinServo1.setPower(0);
+                    outtake.spinServo2.setPower(0);
+                    outtake.Tmotor.setPower(0);
+                    outtake.Bmotor.setPower(0);
+                    LL.targetVel = 0.0;
+                    Outtake.shooting = false;
+                } catch (Exception e) {
+                    // Silently handle cleanup errors
+                }
                 break;
         }
     }
@@ -263,7 +281,7 @@ public class NineBallAutoBlue extends NextFTCOpMode {
         });
 
         // T+150ms: Stop intake and spin servos (150ms of reversing)
-        scheduleAction(150, () -> {
+        scheduleAction(210, () -> {
             intake.off.schedule();
             outtake.spinServo1.setPower(0);
             outtake.spinServo2.setPower(0);
@@ -335,12 +353,19 @@ public class NineBallAutoBlue extends NextFTCOpMode {
 
     @Override
     public void onStop() {
-        intake.off.schedule();
-        outtake.spinServo1.setPower(0);
-        outtake.spinServo2.setPower(0);
-        outtake.Tmotor.setPower(0);
-        outtake.Bmotor.setPower(0);
-        LL.targetVel = 0.0;
-        Outtake.shooting = false;
+        // Clear scheduled actions first to prevent index errors
+        scheduledActions.clear();
+
+        try {
+            intake.off.schedule();
+            outtake.spinServo1.setPower(0);
+            outtake.spinServo2.setPower(0);
+            outtake.Tmotor.setPower(0);
+            outtake.Bmotor.setPower(0);
+            LL.targetVel = 0.0;
+            Outtake.shooting = false;
+        } catch (Exception e) {
+            // Silently handle cleanup errors at end
+        }
     }
 }

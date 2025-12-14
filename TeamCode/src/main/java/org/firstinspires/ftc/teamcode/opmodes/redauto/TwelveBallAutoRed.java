@@ -27,14 +27,14 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
     private List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     // Timing constants (tunable)
-    private static final long SHOOT_SEQUENCE_TIME = 2500;
+    private static final long SHOOT_SEQUENCE_TIME = 2900;
     private static final long INTAKE_START_DELAY = 400;
 
     // Shot velocities (tunable for each shot)
     private static final double SHOT_1_VELOCITY = 1450.0;  // Preload shot
     private static final double SHOT_2_VELOCITY = 1465.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 1475.0;  // After spike mark 2
-    private static final double SHOT_4_VELOCITY = 1465.0;  // After spike mark 3
+    private static final double SHOT_3_VELOCITY = 1482.0;  // After spike mark 2
+    private static final double SHOT_4_VELOCITY = 1455.0;  // After spike mark 3
 
     private enum AutoState {
         IDLE,
@@ -294,7 +294,7 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
         });
 
         // T+210ms: Stop intake and spin servos (210ms of reversing)
-        scheduleAction(210, () -> {
+        scheduleAction(185, () -> {
             intake.off.schedule();
             outtake.spinServo1.setPower(0);
             outtake.spinServo2.setPower(0);
@@ -307,7 +307,7 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
 
         // T+900ms: Start intake forward
         scheduleAction(900, () -> {
-            intake.onmoving.schedule();
+            intake.autonshooting.schedule();
         });
 
         // T+2400ms: Close gate and cleanup
