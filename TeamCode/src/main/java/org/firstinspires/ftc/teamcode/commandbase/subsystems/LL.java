@@ -50,21 +50,16 @@ public class LL implements Subsystem {
 
     @Override
     public void periodic() {
-        if (!overriding) {
+        // KEY FIX: Don't call adjust() when shooting - it will reset targetVel to 0!
+        if (!overriding && !Outtake.shooting) {
             adjust();
-        } else {
+        } else if (overriding) {
             targetVel = 1200.0;
             Outtake.shooting = true;
         }
-
+        // When shooting is true but overriding is false (autonomous case),
+        // we just maintain whatever targetVel was set externally
     }
-
-//    public void setID() {
-//        LLResult llresult = limelight.getLatestResult();
-//        if (llresult != null && llresult.getFiducialResults() != null && !llresult.getFiducialResults().isEmpty()) {
-//            ID = llresult.getFiducialResults().get(0).getFiducialId();
-//        }
-//    }
 
     public void adjust() {
         LLResult llresult = limelight.getLatestResult();
@@ -97,7 +92,7 @@ public class LL implements Subsystem {
                 if (Math.abs(Math.tan(angleToGoalRad)) > 1e-6) {
                     double distInches = (GOAL_HEIGHT_IN - LIMELIGHT_HEIGHT_IN) / Math.tan(angleToGoalRad);
                     if (!Double.isNaN(distInches) && !Double.isInfinite(distInches) && distInches > 0) {
-                        rawDistance = (float) Math.max(12.0, Math.min(120.0, distInches)); //this might be sketch
+                        rawDistance = (float) Math.max(12.0, Math.min(120.0, distInches));
                     }
                 }
 
@@ -173,7 +168,7 @@ public class LL implements Subsystem {
         double rpm = (Vwheel / (2.0 * Math.PI * flywheelR)) * 60.0;
 
         // Clamp to motor limits
-        return Math.max(800, Math.min(2800, rpm)); //this might be sketch
+        return Math.max(800, Math.min(2800, rpm));
     }
 
 }

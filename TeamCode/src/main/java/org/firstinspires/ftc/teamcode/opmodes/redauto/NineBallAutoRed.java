@@ -27,18 +27,19 @@ public class NineBallAutoRed extends NextFTCOpMode {
     private List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     // Timing constants (tunable)
-    private static final long FLYWHEEL_SPINUP_TIME = 1200;    // Time to reach target RPM (increased for safety)
-    private static final long SHOOT_SEQUENCE_TIME = 2500;      // Total shoot duration
-    private static final long INTAKE_START_DELAY = 400;        // Delay before starting intake
+    private static final long SPINUP_DELAY_BEFORE_SHOOT = 100;  // Minimal delay, motors already spinning
+    private static final double Shooting_Velocity= 1500.0;  // Minimal delay, motors already spinning
+    private static final long SHOOT_SEQUENCE_TIME = 2500;
+    private static final long INTAKE_START_DELAY = 400;
 
     private enum AutoState {
         IDLE,
         // First volley (preload)
-        DRIVE_TO_SCORE_1, SPINUP_1, SHOOT_1,
+        DRIVE_TO_SCORE_1, SHOOT_1,
         // Second volley (spike mark 1)
-        DRIVE_TO_SPIKE_1, INTAKE_SPIKE_1, DRIVE_BACK_TO_SCORE_2, SPINUP_2, SHOOT_2,
+        DRIVE_TO_SPIKE_1, INTAKE_SPIKE_1, DRIVE_BACK_TO_SCORE_2, SHOOT_2,
         // Third volley (spike mark 2)
-        DRIVE_TO_SPIKE_2, INTAKE_SPIKE_2, DRIVE_BACK_TO_SCORE_3, SPINUP_3, SHOOT_3,
+        DRIVE_TO_SPIKE_2, INTAKE_SPIKE_2, DRIVE_BACK_TO_SCORE_3, SHOOT_3,
         // Park
         DRIVE_TO_PARK, COMPLETE
     }
@@ -77,16 +78,15 @@ public class NineBallAutoRed extends NextFTCOpMode {
         TrajectoryFactory.buildTrajectories(follower, true);
         follower.setStartingPose(TrajectoryFactory.goalStartPos.mirror());
 
-        // DON'T start intake on init - wait for auto to start
-        // intake.keeping.schedule();  // REMOVED
-
-        telemetry.addLine("🔴 9-Ball State Machine Ready");
+        telemetry.addLine("🔴 9-Ball State Machine Ready (EARLY SPINUP)");
         telemetry.addData("Target Tag ID", LL.ID);
         telemetry.update();
     }
 
     @Override
     public void onStartButtonPressed() {
+        // Ensure overriding is off for auto
+        org.firstinspires.ftc.teamcode.commandbase.Routines.overriding = false;
         changeState(AutoState.DRIVE_TO_SCORE_1);
     }
 
@@ -108,10 +108,7 @@ public class NineBallAutoRed extends NextFTCOpMode {
         // State transitions
         switch (currentState) {
             case DRIVE_TO_SCORE_1:
-                if (!follower.isBusy()) changeState(AutoState.SPINUP_1);
-                break;
-            case SPINUP_1:
-                if (getStateTime() > FLYWHEEL_SPINUP_TIME) changeState(AutoState.SHOOT_1);
+                if (!follower.isBusy()) changeState(AutoState.SHOOT_1);
                 break;
             case SHOOT_1:
                 if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_SPIKE_1);
@@ -124,10 +121,7 @@ public class NineBallAutoRed extends NextFTCOpMode {
                 if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_2);
                 break;
             case DRIVE_BACK_TO_SCORE_2:
-                if (!follower.isBusy()) changeState(AutoState.SPINUP_2);
-                break;
-            case SPINUP_2:
-                if (getStateTime() > FLYWHEEL_SPINUP_TIME) changeState(AutoState.SHOOT_2);
+                if (!follower.isBusy()) changeState(AutoState.SHOOT_2);
                 break;
             case SHOOT_2:
                 if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_SPIKE_2);
@@ -140,10 +134,7 @@ public class NineBallAutoRed extends NextFTCOpMode {
                 if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_3);
                 break;
             case DRIVE_BACK_TO_SCORE_3:
-                if (!follower.isBusy()) changeState(AutoState.SPINUP_3);
-                break;
-            case SPINUP_3:
-                if (getStateTime() > FLYWHEEL_SPINUP_TIME) changeState(AutoState.SHOOT_3);
+                if (!follower.isBusy()) changeState(AutoState.SHOOT_3);
                 break;
             case SHOOT_3:
                 if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_PARK);
@@ -166,24 +157,31 @@ public class NineBallAutoRed extends NextFTCOpMode {
             case DRIVE_TO_SCORE_1:
                 intake.keeping.schedule();
                 follower.followPath(TrajectoryFactory.goalToScore, true);
-                break;
 
-            case SPINUP_1:
-                // CRITICAL: Set targetVel BEFORE shooting flag
-                // This ensures Outtake.periodic() captures the velocity
-                LL.targetVel = 1600.0;
+                // START SPINNING UP MOTORS IMMEDIATELY DURING DRIVE
                 Outtake.shooting = true;
-                // LED will turn GREEN automatically in Outtake.periodic()
+                LL.targetVel = Shooting_Velocity;
+                outtake.Tmotor.setPower(0.85);  // Direct power backup
+                outtake.Bmotor.setPower(0.85);
                 break;
 
             case SHOOT_1:
             case SHOOT_2:
             case SHOOT_3:
-                executeShootSequence();
+                // Motors should already be at speed, shoot immediately after minimal delay
+                scheduleAction(SPINUP_DELAY_BEFORE_SHOOT, () -> {
+                    executeShootSequence();
+                });
                 break;
 
             case DRIVE_TO_SPIKE_1:
             case DRIVE_TO_SPIKE_2:
+                // Stop motors while collecting balls
+                Outtake.shooting = false;
+                LL.targetVel = 0.0;
+                outtake.Tmotor.setPower(0);
+                outtake.Bmotor.setPower(0);
+
                 // Start path
                 if (newState == AutoState.DRIVE_TO_SPIKE_1) {
                     follower.followPath(TrajectoryFactory.scoreToSpikeMark1, true);
@@ -201,7 +199,6 @@ public class NineBallAutoRed extends NextFTCOpMode {
 
             case INTAKE_SPIKE_1:
                 follower.followPath(TrajectoryFactory.spikeMark1ToEnd, true);
-                // Intake and spin servos already running
                 break;
 
             case INTAKE_SPIKE_2:
@@ -215,6 +212,16 @@ public class NineBallAutoRed extends NextFTCOpMode {
                 outtake.spinServo1.setPower(0);
                 outtake.spinServo2.setPower(0);
 
+                // START SPINNING UP MOTORS DURING DRIVE BACK
+                Outtake.shooting = true;
+                if (LL.tagVisible) {
+                    LL.targetVel = ll.gettargetVel(LL.distance);
+                } else {
+                    LL.targetVel = Shooting_Velocity;
+                }
+                outtake.Tmotor.setPower(0.85);  // Direct power backup
+                outtake.Bmotor.setPower(0.85);
+
                 // Start appropriate path
                 if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
                     follower.followPath(TrajectoryFactory.spikeMark1EndToScore, true);
@@ -223,19 +230,13 @@ public class NineBallAutoRed extends NextFTCOpMode {
                 }
                 break;
 
-            case SPINUP_2:
-            case SPINUP_3:
-                // CRITICAL: Set targetVel BEFORE shooting flag
-                if (LL.tagVisible) {
-                    LL.targetVel = ll.gettargetVel(LL.distance);
-                } else {
-                    LL.targetVel = 1600.0; // Fallback velocity
-                }
-                Outtake.shooting = true;
-                // Outtake.periodic() will handle the PID control
-                break;
-
             case DRIVE_TO_PARK:
+                // Stop motors
+                Outtake.shooting = false;
+                LL.targetVel = 0.0;
+                outtake.Tmotor.setPower(0);
+                outtake.Bmotor.setPower(0);
+
                 follower.followPath(TrajectoryFactory.scoreToOutOfTheWay, true);
                 intake.keeping.schedule();
                 break;
@@ -244,6 +245,8 @@ public class NineBallAutoRed extends NextFTCOpMode {
                 intake.off.schedule();
                 outtake.spinServo1.setPower(0);
                 outtake.spinServo2.setPower(0);
+                outtake.Tmotor.setPower(0);
+                outtake.Bmotor.setPower(0);
                 LL.targetVel = 0.0;
                 Outtake.shooting = false;
                 break;
@@ -285,7 +288,7 @@ public class NineBallAutoRed extends NextFTCOpMode {
             intake.off.schedule();
             outtake.spinServo1.setPower(0);
             outtake.spinServo2.setPower(0);
-            Outtake.shooting = false;
+            // Keep Outtake.shooting = true and motors running for next volley
         });
     }
 
@@ -316,12 +319,17 @@ public class NineBallAutoRed extends NextFTCOpMode {
         telemetry.addLine();
 
         telemetry.addLine("=== FLYWHEEL ===");
-        telemetry.addData("Target RPM", "%.0f", LL.targetVel);
-        telemetry.addData("Top Motor", "%.0f RPM", outtake.Tmotor.getVelocity());
-        telemetry.addData("Bottom Motor", "%.0f RPM", outtake.Bmotor.getVelocity());
-        telemetry.addData("Top Error", "%.0f", LL.targetVel - outtake.Tmotor.getVelocity());
-        telemetry.addData("Bottom Error", "%.0f", LL.targetVel - outtake.Bmotor.getVelocity());
-        telemetry.addData("Shooting", Outtake.shooting ? "YES" : "NO");
+        telemetry.addData("LL.targetVel", "%.0f", LL.targetVel);
+        telemetry.addData("Outtake.shooting", Outtake.shooting ? "YES" : "NO");
+        telemetry.addData("Top Motor Power", "%.3f", outtake.Tmotor.getPower());
+        telemetry.addData("Bottom Motor Power", "%.3f", outtake.Bmotor.getPower());
+        telemetry.addData("Top Motor RPM", "%.0f", outtake.Tmotor.getVelocity());
+        telemetry.addData("Bottom Motor RPM", "%.0f", outtake.Bmotor.getVelocity());
+
+        if (LL.targetVel > 0) {
+            telemetry.addData("Top Error", "%.0f RPM", LL.targetVel - outtake.Tmotor.getVelocity());
+            telemetry.addData("Bottom Error", "%.0f RPM", LL.targetVel - outtake.Bmotor.getVelocity());
+        }
         telemetry.addLine();
 
         telemetry.addData("Scheduled Actions", scheduledActions.size());
@@ -333,6 +341,8 @@ public class NineBallAutoRed extends NextFTCOpMode {
         intake.off.schedule();
         outtake.spinServo1.setPower(0);
         outtake.spinServo2.setPower(0);
+        outtake.Tmotor.setPower(0);
+        outtake.Bmotor.setPower(0);
         LL.targetVel = 0.0;
         Outtake.shooting = false;
     }
