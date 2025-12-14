@@ -34,7 +34,7 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
     private static final double SHOT_1_VELOCITY = 1450.0;  // Preload shot
     private static final double SHOT_2_VELOCITY = 1465.0;  // After spike mark 1
     private static final double SHOT_3_VELOCITY = 1482.0;  // After spike mark 2
-    private static final double SHOT_4_VELOCITY = 1455.0;  // After spike mark 3
+    private static final double SHOT_4_VELOCITY = 1430.0;  // After spike mark 3
 
     private enum AutoState {
         IDLE,

@@ -17,15 +17,15 @@ public class TrajectoryFactory {
 
     // Spike Mark 1 positions
     public static Pose spikeMark1PosPre = new Pose(41.6 + 6, 83.6, Math.toRadians(180));
-    public static Pose spikeMark1PosOuter = new Pose(26.6 - 6.2, 83.6, Math.toRadians(180));
+    public static Pose spikeMark1PosOuter = new Pose(26.6 - 6.7, 83.6, Math.toRadians(180));
 
     // Spike Mark 2 positions
     public static Pose spikeMark2PosPre = new Pose(41.6 + 6, 60.0, Math.toRadians(180));
-    public static Pose spikeMark2PosOuter = new Pose(26.6 - 6.6, 60.0, Math.toRadians(180));
+    public static Pose spikeMark2PosOuter = new Pose(26.6 - 7.5, 60.0, Math.toRadians(180));
 
     // Spike Mark 3 positions
     public static Pose spikeMark3PosPre = new Pose(42.6 + 7, 35.3, Math.toRadians(180));
-    public static Pose spikeMark3PosOuter = new Pose(25.6 -8.3, 35.3, Math.toRadians(180));
+    public static Pose spikeMark3PosOuter = new Pose(25.6 -11, 35.3, Math.toRadians(180));
 
     public static Pose outOfTheWayPos = new Pose(45.0, 128.0, Math.toRadians(180));
 
@@ -129,6 +129,7 @@ public class TrajectoryFactory {
         spikeMark3ToEnd = follower.pathBuilder()
                 .addPath(new BezierLine(spikeMark3PosPre, spikeMark3PosOuter))
                 .setLinearHeadingInterpolation(spikeMark3PosPre.getHeading(), spikeMark3PosOuter.getHeading())
+                .setVelocityConstraint(40)
                 .build();
 
         // Spike mark 3 end back to score
@@ -331,7 +332,7 @@ public class TrajectoryFactory {
                 .setLinearHeadingInterpolation(
                         spikeMark3PosPre.mirror().getHeading(),
                         spikeMark3PosOuter.mirror().getHeading()
-                )
+                ).setVelocityConstraint(40)
                 .build();
 
         // Spike mark 3 end to score (mirrored)
