@@ -28,9 +28,13 @@ public class NineBallAutoRed extends NextFTCOpMode {
 
     // Timing constants (tunable)
     private static final long SPINUP_DELAY_BEFORE_SHOOT = 100;  // Minimal delay, motors already spinning
-    private static final double Shooting_Velocity= 1500.0;  // Minimal delay, motors already spinning
     private static final long SHOOT_SEQUENCE_TIME = 2500;
     private static final long INTAKE_START_DELAY = 400;
+
+    // Shot velocities (tunable for each shot)
+    private static final double SHOT_1_VELOCITY = 1450.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 1465.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 1475.0;  // After spike mark 2
 
     private enum AutoState {
         IDLE,
@@ -160,18 +164,16 @@ public class NineBallAutoRed extends NextFTCOpMode {
 
                 // START SPINNING UP MOTORS IMMEDIATELY DURING DRIVE
                 Outtake.shooting = true;
-                LL.targetVel = Shooting_Velocity;
-                outtake.Tmotor.setPower(0.85);  // Direct power backup
-                outtake.Bmotor.setPower(0.85);
+                LL.targetVel = SHOT_1_VELOCITY;
+//                outtake.Tmotor.setPower(0.85);  // Direct power backup
+//                outtake.Bmotor.setPower(0.85);
                 break;
 
             case SHOOT_1:
             case SHOOT_2:
             case SHOOT_3:
-                // Motors should already be at speed, shoot immediately after minimal delay
-                scheduleAction(SPINUP_DELAY_BEFORE_SHOOT, () -> {
-                    executeShootSequence();
-                });
+                // Motors should already be at speed, execute shoot sequence immediately
+                executeShootSequence();
                 break;
 
             case DRIVE_TO_SPIKE_1:
@@ -214,13 +216,16 @@ public class NineBallAutoRed extends NextFTCOpMode {
 
                 // START SPINNING UP MOTORS DURING DRIVE BACK
                 Outtake.shooting = true;
-                if (LL.tagVisible) {
-                    LL.targetVel = ll.gettargetVel(LL.distance);
+
+                // Set velocity based on which shot
+                if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
+                    LL.targetVel = SHOT_2_VELOCITY;
                 } else {
-                    LL.targetVel = Shooting_Velocity;
+                    LL.targetVel = SHOT_3_VELOCITY;
                 }
-                outtake.Tmotor.setPower(0.85);  // Direct power backup
-                outtake.Bmotor.setPower(0.85);
+
+//                outtake.Tmotor.setPower(0.85);  // Direct power backup
+//                outtake.Bmotor.setPower(0.85);
 
                 // Start appropriate path
                 if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
@@ -266,7 +271,7 @@ public class NineBallAutoRed extends NextFTCOpMode {
         });
 
         // T+150ms: Stop intake and spin servos (150ms of reversing)
-        scheduleAction(150, () -> {
+        scheduleAction(210, () -> {
             intake.off.schedule();
             outtake.spinServo1.setPower(0);
             outtake.spinServo2.setPower(0);

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.targetVel;
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.tagVisible;
 
+import com.bylazar.configurables.annotations.Configurable;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.hardware.impl.MotorEx;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+@Configurable
 public class Outtake implements Subsystem {
     public static final Outtake INSTANCE = new Outtake();
     private Outtake() {}
@@ -33,6 +35,12 @@ public class Outtake implements Subsystem {
     private double localTargetVel = 0.0;
     private static final double SPINDOWN_RATE = 50.0;
 
+    // Configurable PID coefficients
+    public static double kP = 0.0004;
+    public static double kI = 0.00008;
+    public static double kD = 0.00002;
+    public static double kF = 0.00035;
+
     // Simple PID controllers
     private SimplePID TmotorPID;
     private SimplePID BmotorPID;
@@ -43,9 +51,9 @@ public class Outtake implements Subsystem {
         spinServo2 = hardwareMap.get(CRServo.class, "spinServo2");
         gateServo = hardwareMap.get(Servo.class, "gateServo");
 
-        // Initialize PID - tune these values as needed
-        TmotorPID = new SimplePID(0.0004, 0.00008, 0.00002, 0.00035);
-        BmotorPID = new SimplePID(0.0004, 0.00008, 0.00002, 0.00035);
+        // Initialize PID controllers
+        TmotorPID = new SimplePID();
+        BmotorPID = new SimplePID();
 
         reset();
     }
@@ -138,18 +146,13 @@ public class Outtake implements Subsystem {
         @Override public boolean isDone() { return true; }
     };
 
-    // Simple PID Controller
+    // Simple PID Controller - reads from configurable static variables
     private static class SimplePID {
-        private final double kP, kI, kD, kF;
         private double integral = 0.0;
         private double previousError = 0.0;
         private long lastTime = 0;
 
-        public SimplePID(double kP, double kI, double kD, double kF) {
-            this.kP = kP;
-            this.kI = kI;
-            this.kD = kD;
-            this.kF = kF;
+        public SimplePID() {
             this.lastTime = System.currentTimeMillis();
         }
 
@@ -170,7 +173,7 @@ public class Outtake implements Subsystem {
             double derivative = (error - previousError) / dt;
             previousError = error;
 
-            // PIDF output
+            // PIDF output using configurable coefficients
             double output = (kP * error) + (kI * integral) + (kD * derivative) + (kF * target);
 
             return output;

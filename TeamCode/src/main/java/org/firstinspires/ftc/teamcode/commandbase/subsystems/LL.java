@@ -162,7 +162,7 @@ public class LL implements Subsystem {
         double Vball = Math.sqrt(numerator / (2.0 * cosAngle * cosAngle * denom));
 
         // Account for energy loss (flywheel to ball efficiency)
-        double Vwheel = Vball / 0.628;
+        double Vwheel = Vball / 0.635;
 
         // Convert linear velocity (m/s) to RPM
         double rpm = (Vwheel / (2.0 * Math.PI * flywheelR)) * 60.0;

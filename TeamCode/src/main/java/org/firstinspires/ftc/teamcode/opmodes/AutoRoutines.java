@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes;
+
 import static org.firstinspires.ftc.onbotjava.OnBotJavaManager.initialize;
 import static org.firstinspires.ftc.teamcode.pedro.Tuning.follower;
 
@@ -12,6 +13,7 @@ import dev.nextftc.core.commands.groups.ParallelRaceGroup;
 import dev.nextftc.core.commands.groups.SequentialGroup;
 import dev.nextftc.core.commands.utility.LambdaCommand;
 import dev.nextftc.extensions.pedro.FollowPath;
+
 import org.firstinspires.ftc.teamcode.commandbase.Routines;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.opmodes.TrajectoryFactory;
@@ -48,7 +50,6 @@ public class AutoRoutines {
                 routines.fullOuttakeSequenceAuto()
         );
     }
-
 
 
     /**
@@ -105,7 +106,7 @@ public class AutoRoutines {
     public Command farnineBallAuto() {
         return new SequentialGroup(
                 new ParallelRaceGroup(
-                        new FollowPath(TrajectoryFactory.farStartToScore,true), //far start pos to far shooting pos
+                        new FollowPath(TrajectoryFactory.farStartToScore, true), //far start pos to far shooting pos
                         intake.keeping
                 ),
                 routines.fullOuttakeSequenceAuto(),

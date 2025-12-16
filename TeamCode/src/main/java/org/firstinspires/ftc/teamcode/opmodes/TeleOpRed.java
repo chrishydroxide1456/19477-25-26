@@ -25,7 +25,7 @@ public class TeleOpRed extends NextFTCOpMode {
 
     @Override
     public void onInit() {
-        LL.ID = 20;
+        LL.ID = 24;
         Drive.INSTANCE.stopAutoAlign();
 
         intake = Intake.INSTANCE;
@@ -43,16 +43,16 @@ public class TeleOpRed extends NextFTCOpMode {
         );
 
         // DPAD UP = AUTO ALIGN
-        button(() -> gamepad2.left_bumper).whenBecomesTrue(() -> {
+        button(() -> gamepad1.left_bumper).whenBecomesTrue(() -> {
             if (tagVisible) {
                 routines.autoAlignOnly().schedule();
             } else {
-                gamepad2.rumble(100); // Haptic feedback for no target
+                gamepad1.rumble(100); // Haptic feedback for no target
             }
         });
 
         // DPAD DOWN = SHOOT SEQUENCE
-        button(() -> gamepad2.right_bumper).whenBecomesTrue(() -> {
+        button(() -> gamepad1.right_bumper).whenBecomesTrue(() -> {
             if (tagVisible) {
                 overriding = false;
                 Outtake.shooting = false;

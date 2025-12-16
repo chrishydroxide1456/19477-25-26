@@ -24,8 +24,8 @@ public class TrajectoryFactory {
     public static Pose spikeMark2PosOuter = new Pose(26.6 - 6.6, 60.0, Math.toRadians(180));
 
     // Spike Mark 3 positions
-    public static Pose spikeMark3PosPre = new Pose(40.6 + 7, 35.6, Math.toRadians(180));
-    public static Pose spikeMark3PosOuter = new Pose(25.6 - 5.6, 35.6, Math.toRadians(180));
+    public static Pose spikeMark3PosPre = new Pose(42.6 + 7, 35.6, Math.toRadians(180));
+    public static Pose spikeMark3PosOuter = new Pose(25.6 -7, 35.6, Math.toRadians(180));
 
     public static Pose outOfTheWayPos = new Pose(45.0, 128.0, Math.toRadians(180));
 
