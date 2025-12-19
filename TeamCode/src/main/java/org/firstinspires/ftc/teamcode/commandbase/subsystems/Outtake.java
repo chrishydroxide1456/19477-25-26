@@ -17,8 +17,8 @@ public class Outtake implements Subsystem {
     private Outtake() {}
 
     public static boolean shooting = false;
+    public static boolean spinup = false;  // NEW: Auto-spinup when tag visible
 
-    public static boolean spinup = false;
     public final MotorEx Tmotor = new MotorEx("Tmotor").reversed();
     public final MotorEx Bmotor = new MotorEx("Bmotor");
     private Servo gateServo;
@@ -35,10 +35,13 @@ public class Outtake implements Subsystem {
     private double localTargetVel = 0.0;
     private static final double SPINDOWN_RATE = 50.0;
 
+    // Velocity locking for consistent shooting
+    private boolean velocityLocked = false;
+
     // Configurable PID coefficients
-    public static double kP = 0.0004;
-    public static double kI = 0.00008;
-    public static double kD = 0.00002;
+    public static double kP = 0.006;
+    public static double kI = 0.0002;
+    public static double kD = 0.00005;
     public static double kF = 0.00035;
 
     // Simple PID controllers
@@ -66,9 +69,11 @@ public class Outtake implements Subsystem {
         spinServo2.setPower(0);
         led.setPosition(0.277);
         shooting = false;
+        spinup = false;
         lastFlashTime = 0;
         flashState = false;
         localTargetVel = 0.0;
+        velocityLocked = false;
 
         if (TmotorPID != null) TmotorPID.reset();
         if (BmotorPID != null) BmotorPID.reset();
@@ -76,18 +81,26 @@ public class Outtake implements Subsystem {
 
     @Override
     public void periodic() {
-        // Update local target velocity for gradual spindown
+        // Update local target velocity with velocity locking
         if (shooting) {
-            // When shooting, capture targetVel if it's valid
-            if (targetVel > 0.0) {
+            // Lock velocity at the start of shooting for consistency
+            if (!velocityLocked && targetVel > 0.0) {
                 localTargetVel = targetVel;
+                velocityLocked = true;
             }
-            // Keep using localTargetVel even if targetVel drops to 0 during shooting
-        } else if (localTargetVel > 0) {
-            // Gradual spindown when not shooting
-            localTargetVel -= SPINDOWN_RATE;
-            if (localTargetVel < 0) {
-                localTargetVel = 0;
+            // Don't update localTargetVel again until shooting stops
+        } else if (spinup) {
+            // NEW: Auto-spinup when tag is visible
+            velocityLocked = false;
+            localTargetVel = targetVel; // Follow the calculated targetVel
+        } else {
+            // Not shooting and not spinning up = gradual spindown
+            velocityLocked = false;
+            if (localTargetVel > 0) {
+                localTargetVel -= SPINDOWN_RATE;
+                if (localTargetVel < 0) {
+                    localTargetVel = 0;
+                }
             }
         }
 
@@ -98,8 +111,14 @@ public class Outtake implements Subsystem {
             double BcurrentVel = Bmotor.getVelocity();
 
             // Calculate PID outputs
-            double Tpower = TmotorPID.calculate(TcurrentVel, localTargetVel);
-            double Bpower = BmotorPID.calculate(BcurrentVel, localTargetVel);
+            double Tpower = TmotorPID.calculate(TcurrentVel, localTargetVel, shooting);
+            double Bpower = BmotorPID.calculate(BcurrentVel, localTargetVel, shooting);
+
+            // Add feed-forward compensation during active feeding
+            if (shooting && gateServo.getPosition() < 0.5) { // Gate is open
+                Tpower += 0.05; // Compensate for load
+                Bpower += 0.05;
+            }
 
             // Clamp to [0, 1]
             Tpower = Math.max(0.0, Math.min(1.0, Tpower));
@@ -119,17 +138,32 @@ public class Outtake implements Subsystem {
         long currentTime = System.currentTimeMillis();
 
         if (shooting) {
-            led.setPosition(0.500); // GREEN
+            led.setPosition(0.500); // GREEN - actively shooting
+        } else if (spinup && tagVisible) {
+            led.setPosition(0.611); // BLUE - spun up and ready
         } else if (tagVisible) {
-            led.setPosition(0.611); // BLUE
+            led.setPosition(0.611); // BLUE - tag visible but not spun up yet
         } else {
-            // FLASHING RED
+            // FLASHING RED - no tag
             if (currentTime - lastFlashTime > FLASH_INTERVAL_MS) {
                 flashState = !flashState;
                 lastFlashTime = currentTime;
             }
             led.setPosition(flashState ? 0.277 : 0.0);
         }
+    }
+
+    // Public methods for telemetry/debugging
+    public double getTmotorError() {
+        return localTargetVel - Tmotor.getVelocity();
+    }
+
+    public double getBmotorError() {
+        return localTargetVel - Bmotor.getVelocity();
+    }
+
+    public double getLocalTargetVel() {
+        return localTargetVel;
     }
 
     public Command open = new Command() {
@@ -156,7 +190,7 @@ public class Outtake implements Subsystem {
             this.lastTime = System.currentTimeMillis();
         }
 
-        public double calculate(double current, double target) {
+        public double calculate(double current, double target, boolean shooting) {
             long currentTime = System.currentTimeMillis();
             double dt = (currentTime - lastTime) / 1000.0;
             if (dt > 0.1 || dt <= 0) dt = 0.02;
@@ -164,10 +198,11 @@ public class Outtake implements Subsystem {
 
             double error = target - current;
 
-            // Integral with anti-windup
+            // Integral with adaptive anti-windup (higher limit during shooting)
             integral += error * dt;
-            if (integral > 500) integral = 500;
-            if (integral < -500) integral = -500;
+            double maxIntegral = shooting ? 1000 : 500;
+            if (integral > maxIntegral) integral = maxIntegral;
+            if (integral < -maxIntegral) integral = -maxIntegral;
 
             // Derivative
             double derivative = (error - previousError) / dt;

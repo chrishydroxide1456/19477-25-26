@@ -34,8 +34,6 @@ public class LL implements Subsystem {
     private long lastDetectionTime = 0;
     private static final long DETECTION_TIMEOUT_MS = 500;
 
-    private static boolean seeATag;
-
     public void initialize(HardwareMap hardwareMap) {
         headingAdjust = 0.0;
         distance = 36.0f;
@@ -50,15 +48,16 @@ public class LL implements Subsystem {
 
     @Override
     public void periodic() {
-        // KEY FIX: Don't call adjust() when shooting - it will reset targetVel to 0!
-        if (!overriding && !Outtake.shooting) {
-            adjust();
-        } else if (overriding) {
-            targetVel = 1200.0;
-            Outtake.shooting = true;
+        // Always run adjust() to update tag visibility and calculate targetVel
+        adjust();
+
+        // Auto-spinup logic: spin up flywheels when tag is visible (but not during shooting)
+        if (tagVisible && !Outtake.shooting) {
+            Outtake.spinup = true;
+        } else if (!tagVisible && !Outtake.shooting) {
+            Outtake.spinup = false;
         }
-        // When shooting is true but overriding is false (autonomous case),
-        // we just maintain whatever targetVel was set externally
+        // During shooting, the shooting sequence controls the spinup state
     }
 
     public void adjust() {
@@ -66,7 +65,7 @@ public class LL implements Subsystem {
         long currentTime = System.currentTimeMillis();
 
         if (llresult != null && llresult.getFiducialResults() != null && !llresult.getFiducialResults().isEmpty()) {
-            // **KEY CHANGE**: Find the tag that matches our target ID
+            // Find the tag that matches our target ID
             LLResultTypes.FiducialResult targetTag = null;
             for (LLResultTypes.FiducialResult fidResult : llresult.getFiducialResults()) {
                 if (fidResult.getFiducialId() == ID) {
@@ -100,10 +99,12 @@ public class LL implements Subsystem {
                 smoothedDistance = smoothDistance(rawDistance, smoothedDistance);
                 distance = smoothedDistance;
 
-                // Velocity based on smoothed distance
-                double calculatedVel = gettargetVel(distance);
-                targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                        ? calculatedVel : 800.0;
+                // Calculate velocity based on distance (only update when not shooting to prevent mid-shot changes)
+                if (!Outtake.shooting) {
+                    double calculatedVel = gettargetVel(distance);
+                    targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
+                            ? calculatedVel : 800.0;
+                }
 
             } else {
                 // Camera sees tags, but NOT our target ID - treat as no detection
@@ -122,12 +123,16 @@ public class LL implements Subsystem {
             tagVisible = true;
             distance = smoothedDistance;
             headingAdjust = 0.0;
-            targetVel = gettargetVel(distance);
+            if (!Outtake.shooting) {
+                targetVel = gettargetVel(distance);
+            }
         } else {
             // Tag actually lost
             tagVisible = false;
             headingAdjust = 0.0;
-            targetVel = 0.0;
+            if (!Outtake.shooting) {
+                targetVel = 0.0;
+            }
             distance = 0.0f;
             smoothedDistance = 36.0f;
         }
@@ -137,7 +142,7 @@ public class LL implements Subsystem {
         return (float) (SMOOTHING_ALPHA * newDistance + (1.0 - SMOOTHING_ALPHA) * oldDistance);
     }
 
-    // CORRECT: Ballistic physics with proper unit conversions
+    // Ballistic physics with proper unit conversions
     public double gettargetVel(double Distance) {
         // Convert everything to meters
         double Hshooter = LIMELIGHT_HEIGHT_IN / 39.37;  // inches → meters
@@ -162,7 +167,7 @@ public class LL implements Subsystem {
         double Vball = Math.sqrt(numerator / (2.0 * cosAngle * cosAngle * denom));
 
         // Account for energy loss (flywheel to ball efficiency)
-        double Vwheel = Vball / 0.635;
+        double Vwheel = Vball / 0.7;
 
         // Convert linear velocity (m/s) to RPM
         double rpm = (Vwheel / (2.0 * Math.PI * flywheelR)) * 60.0;

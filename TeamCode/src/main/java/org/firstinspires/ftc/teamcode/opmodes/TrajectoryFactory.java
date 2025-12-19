@@ -13,7 +13,8 @@ public class TrajectoryFactory {
     public static Pose goalStartPos = new Pose(26.0, 130.0, Math.toRadians(-40));
     public static Pose farStartPos = new Pose(56.0, 8.0, Math.toRadians(180));
     public static Pose farParkPos = new Pose(36.0, 8.0, Math.toRadians(180));
-    public static Pose scorePos = new Pose(45, 105, Math.toRadians(-47));
+    //public static Pose scorePos = new Pose(45, 105, Math.toRadians(-47));
+    public static Pose scorePos = new Pose(60, 85, Math.toRadians(-51));
 
     // Spike Mark 1 positions
     public static Pose spikeMark1PosPre = new Pose(41.6 + 6, 83.6, Math.toRadians(180));
@@ -24,8 +25,8 @@ public class TrajectoryFactory {
     public static Pose spikeMark2PosOuter = new Pose(26.6 - 7.5, 60.0, Math.toRadians(180));
 
     // Spike Mark 3 positions
-    public static Pose spikeMark3PosPre = new Pose(42.6 + 7, 35.3, Math.toRadians(180));
-    public static Pose spikeMark3PosOuter = new Pose(25.6 -11, 35.3, Math.toRadians(180));
+    public static Pose spikeMark3PosPre = new Pose(42.6 + 10, 35.5, Math.toRadians(180));
+    public static Pose spikeMark3PosOuter = new Pose(25.6 -11.5, 35.5, Math.toRadians(180));
 
     public static Pose outOfTheWayPos = new Pose(45.0, 128.0, Math.toRadians(180));
 
@@ -129,7 +130,6 @@ public class TrajectoryFactory {
         spikeMark3ToEnd = follower.pathBuilder()
                 .addPath(new BezierLine(spikeMark3PosPre, spikeMark3PosOuter))
                 .setLinearHeadingInterpolation(spikeMark3PosPre.getHeading(), spikeMark3PosOuter.getHeading())
-                .setVelocityConstraint(40)
                 .build();
 
         // Spike mark 3 end back to score
@@ -332,7 +332,7 @@ public class TrajectoryFactory {
                 .setLinearHeadingInterpolation(
                         spikeMark3PosPre.mirror().getHeading(),
                         spikeMark3PosOuter.mirror().getHeading()
-                ).setVelocityConstraint(40)
+                )
                 .build();
 
         // Spike mark 3 end to score (mirrored)

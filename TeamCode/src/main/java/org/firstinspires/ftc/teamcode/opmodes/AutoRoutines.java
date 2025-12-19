@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.commandbase.Routines;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.opmodes.TrajectoryFactory;
 
-
+@Deprecated
 public class AutoRoutines {
 
     private final Routines routines;

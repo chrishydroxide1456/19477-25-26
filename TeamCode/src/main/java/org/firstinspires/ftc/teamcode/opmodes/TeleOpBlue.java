@@ -46,9 +46,10 @@ public class TeleOpBlue extends NextFTCOpMode {
         button(() -> gamepad1.left_bumper).whenBecomesTrue(() -> {
             if (tagVisible) {
                 routines.autoAlignOnly().schedule();
-            } else {
-                gamepad1.rumble(100); // Haptic feedback for no target
             }
+//            else {
+//                gamepad1.rumble(100); // Haptic feedback for no target
+//            }
         });
 
         // DPAD DOWN = SHOOT SEQUENCE
