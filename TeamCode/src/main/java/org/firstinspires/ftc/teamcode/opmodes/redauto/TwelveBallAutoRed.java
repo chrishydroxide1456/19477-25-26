@@ -31,10 +31,10 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
     private static final long INTAKE_START_DELAY = 400;
 
     // Shot velocities (tunable for each shot)
-    private static final double SHOT_1_VELOCITY = 1480.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 1500.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 1495.0;  // After spike mark 2
-    private static final double SHOT_4_VELOCITY = 1495.0; // After spike mark 3
+    private static final double SHOT_1_VELOCITY = 1330.0;  // Preload shot 1470
+    private static final double SHOT_2_VELOCITY = 1365.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 1350.0;  // After spike mark 2
+    private static final double SHOT_4_VELOCITY = 1350.0; // After spike mark 3
 
     private enum AutoState {
         IDLE,
@@ -196,8 +196,8 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
                 // Stop motors while collecting balls
                 Outtake.shooting = false;
                 LL.targetVel = 0.0;
-                outtake.Tmotor.setPower(0);
-                outtake.Bmotor.setPower(0);
+//                outtake.Tmotor.setPower(0);
+//                outtake.Bmotor.setPower(0);
 
                 // Start path
                 if (newState == AutoState.DRIVE_TO_SPIKE_1) {
@@ -262,8 +262,8 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
                 // Stop motors
                 Outtake.shooting = false;
                 LL.targetVel = 0.0;
-                outtake.Tmotor.setPower(0);
-                outtake.Bmotor.setPower(0);
+//                outtake.Tmotor.setPower(0);
+//                outtake.Bmotor.setPower(0);
 
                 follower.followPath(TrajectoryFactory.scoreToOutOfTheWay, true);
                 intake.keeping.schedule();
@@ -273,8 +273,8 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
                 intake.off.schedule();
                 outtake.spinServo1.setPower(0);
                 outtake.spinServo2.setPower(0);
-                outtake.Tmotor.setPower(0);
-                outtake.Bmotor.setPower(0);
+//                outtake.Tmotor.setPower(0);
+//                outtake.Bmotor.setPower(0);
                 LL.targetVel = 0.0;
                 Outtake.shooting = false;
                 break;
