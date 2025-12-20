@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.blueauto;
+package org.firstinspires.ftc.teamcode.opmodes.redauto;
 
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import java.util.*;
 
-@Autonomous(name = "🔵 9-Ball Far Blue", group = "Blue", preselectTeleOp = "TeleOpBlue")
-public class FarNineBallAutoBlue extends NextFTCOpMode {
+@Autonomous(name = "🔴 9-Ball Far Red", group = "Red", preselectTeleOp = "TeleOpRed")
+public class FarNineBallAutoRed extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
@@ -57,7 +57,7 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
         }
     }
 
-    public FarNineBallAutoBlue() {
+    public FarNineBallAutoRed() {
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
         ll = LL.INSTANCE;
@@ -78,8 +78,8 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
         follower = PedroComponent.follower();
 
         // Build BLUE alliance trajectories (sets LL.ID = 24)
-        TrajectoryFactory.buildTrajectories(follower, false);
-        follower.setStartingPose(TrajectoryFactory.farStartPos);
+        TrajectoryFactory.buildTrajectories(follower, true);
+        follower.setStartingPose(TrajectoryFactory.farStartPos.mirror());
 
         telemetry.addLine("🔵 Far 9-Ball State Machine Ready");
         telemetry.addData("Target Tag ID", LL.ID);
