@@ -11,10 +11,10 @@ public class Drive implements Subsystem {
     public static double multi = 1.0;
     private Drive() { }
 
-    public final MotorEx FLmotor = new MotorEx("FLmotor").brakeMode();
-    public final MotorEx FRmotor = new MotorEx("FRmotor").brakeMode().reversed();
-    public final MotorEx BLmotor = new MotorEx("BLmotor").brakeMode().reversed();
-    public final MotorEx BRmotor = new MotorEx("BRmotor").brakeMode().reversed();
+    public final MotorEx FLmotor = new MotorEx("FLmotor").floatMode();
+    public final MotorEx FRmotor = new MotorEx("FRmotor").floatMode().reversed();
+    public final MotorEx BLmotor = new MotorEx("BLmotor").floatMode().reversed();
+    public final MotorEx BRmotor = new MotorEx("BRmotor").floatMode().reversed();
 
     private boolean autoAlignActive = false;
 

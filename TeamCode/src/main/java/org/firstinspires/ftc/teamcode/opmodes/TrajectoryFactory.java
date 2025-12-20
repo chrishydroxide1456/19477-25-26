@@ -7,12 +7,28 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 
 public class TrajectoryFactory {
-//TODO: Make it so all of the intaking spike mark paths (spike mark to end) are at a 0.58 dt mutliplier
+    //TODO: Make it so all of the intaking spike mark paths (spike mark to end) are at a 0.58 dt multiplier
+
     // Poses - all positions on the field
     public static Pose goalStartPos = new Pose(26.0, 130.0, Math.toRadians(-40));
     public static Pose farStartPos = new Pose(56.0, 8.0, Math.toRadians(180));
     public static Pose farParkPos = new Pose(36.0, 8.0, Math.toRadians(180));
-    public static Pose scorePos = new Pose(30.0, 119.0, Math.toRadians(-42));
+    //public static Pose scorePos = new Pose(45, 105, Math.toRadians(-47));
+    public static Pose scorePos = new Pose(60, 85, Math.toRadians(-51));
+
+    // Spike Mark 1 positions
+    public static Pose spikeMark1PosPre = new Pose(41.6 + 6, 83.6, Math.toRadians(180));
+    public static Pose spikeMark1PosOuter = new Pose(26.6 - 6.7, 83.6, Math.toRadians(180));
+
+    // Spike Mark 2 positions
+    public static Pose spikeMark2PosPre = new Pose(41.6 + 6, 60.0, Math.toRadians(180));
+    public static Pose spikeMark2PosOuter = new Pose(26.6 - 7.5, 60.0, Math.toRadians(180));
+
+    // Spike Mark 3 positions
+    public static Pose spikeMark3PosPre = new Pose(42.6 + 10, 35.5, Math.toRadians(180));
+    public static Pose spikeMark3PosOuter = new Pose(25.6 -11.5, 35.5, Math.toRadians(180));
+
+    public static Pose outOfTheWayPos = new Pose(45.0, 128.0, Math.toRadians(180));
 
     public static Pose farscorePos = new Pose(58.9, 20.1, Math.toRadians(115));
 
@@ -20,35 +36,11 @@ public class TrajectoryFactory {
 
     public static Pose HumanZone = new Pose(11.8, 12.3, Math.toRadians(16));
 
-    // Spike Mark 1 positions
-    public static Pose spikeMark1PosPre = new Pose(41.6+1.4 , 83.6, Math.toRadians(180));
-    public static Pose spikeMark1PosOuter = new Pose(26.6-6.6 , 83.6, Math.toRadians(180));
-
-    // Spike Mark 2 positions
-    public static Pose spikeMark2PosPre = new Pose(41.6+1.4 , 60.0, Math.toRadians(180));
-    public static Pose spikeMark2PosOuter = new Pose(26.6-6.6 , 60.0, Math.toRadians(180));
-
-    // Spike Mark 3 positions
-    public static Pose spikeMark3PosPre = new Pose(40.6+2.4 , 35.6, Math.toRadians(180));
-    public static Pose spikeMark3PosOuter = new Pose(25.6-5.6 , 35.6, Math.toRadians(180));
-
-    public static Pose outOfTheWayPos = new Pose(45.0, 128.0, Math.toRadians(180));
-
     // Path chains
     public static PathChain goalToScore;
-
-    public static PathChain farStartToScore;
-    public static PathChain farScoreToHuman;
-
-    public static PathChain HumanCollect;
-
-    public static PathChain HumanTofarScore;
     public static PathChain scoreToSpikeMark1;
-
-    public static PathChain farscoreToSpikeMark1;
     public static PathChain spikeMark1ToEnd;
     public static PathChain spikeMark1EndToScore;
-    public static PathChain spikeMark1EndTofarscore;
     public static PathChain scoreToSpikeMark2;
     public static PathChain spikeMark2ToEnd;
     public static PathChain spikeMark2EndToScore;
@@ -58,6 +50,12 @@ public class TrajectoryFactory {
     public static PathChain scoreToOutOfTheWay;
     public static PathChain farStartToPark;
 
+    public static PathChain farStartToScore;
+    public static PathChain farScoreToHuman;
+    public static PathChain HumanCollect;
+    public static PathChain HumanTofarScore;
+    public static PathChain farscoreToSpikeMark1;
+    public static PathChain spikeMark1EndTofarscore;
     public static PathChain farscoreToPark;
 
     public static void buildTrajectories(Follower follower, boolean isRedAlliance) {
@@ -78,11 +76,6 @@ public class TrajectoryFactory {
                 .setLinearHeadingInterpolation(goalStartPos.getHeading(), scorePos.getHeading())
                 .build();
 
-        farStartToScore = follower.pathBuilder()
-                .addPath(new BezierCurve(farStartPos, farscorePos))
-                .setLinearHeadingInterpolation(farStartPos.getHeading(), farscorePos.getHeading())
-                .build();
-
         // Score to spike mark 1 pre-position
         scoreToSpikeMark1 = follower.pathBuilder()
                 .addPath(new BezierCurve(
@@ -91,27 +84,6 @@ public class TrajectoryFactory {
                         spikeMark1PosPre
                 ))
                 .setLinearHeadingInterpolation(scorePos.getHeading(), spikeMark1PosPre.getHeading())
-                .build();
-
-        farscoreToSpikeMark1 = follower.pathBuilder()
-                .addPath(new BezierCurve(farscorePos, new Pose(spikeMark1PosPre.getX() + 25, spikeMark1PosPre.getY(), spikeMark1PosPre.getHeading()),
-                        spikeMark1PosPre, spikeMark1PosPre))
-                .setLinearHeadingInterpolation(farscorePos.getHeading(), spikeMark1PosPre.getHeading())
-                .build();
-
-        farScoreToHuman = follower.pathBuilder()
-                .addPath(new BezierCurve(farscorePos, HumanArtifacts))
-                .setLinearHeadingInterpolation(farscorePos.getHeading(), HumanArtifacts.getHeading())
-                .build();
-
-        HumanCollect = follower.pathBuilder()
-                .addPath(new BezierCurve(HumanArtifacts, HumanZone))
-                .setLinearHeadingInterpolation(HumanArtifacts.getHeading(), HumanZone.getHeading())
-                .build();
-
-        HumanTofarScore = follower.pathBuilder()
-                .addPath(new BezierCurve(HumanZone, farscorePos))
-                .setLinearHeadingInterpolation(HumanZone.getHeading(), farscorePos.getHeading())
                 .build();
 
         // Spike mark 1 pre to outer (end position)
@@ -123,12 +95,7 @@ public class TrajectoryFactory {
         // Spike mark 1 end back to score
         spikeMark1EndToScore = follower.pathBuilder()
                 .addPath(new BezierLine(spikeMark1PosOuter, scorePos))
-                .setLinearHeadingInterpolation(spikeMark1PosOuter.getHeading(), farscorePos.getHeading())
-                .build();
-
-        spikeMark1EndTofarscore = follower.pathBuilder()
-                .addPath(new BezierCurve(spikeMark1PosOuter, farscorePos))
-                .setLinearHeadingInterpolation(spikeMark1PosOuter.getHeading(), farscorePos.getHeading())
+                .setLinearHeadingInterpolation(spikeMark1PosOuter.getHeading(), scorePos.getHeading())
                 .build();
 
         // Score to spike mark 2 pre-position
@@ -176,6 +143,39 @@ public class TrajectoryFactory {
                 .addPath(new BezierLine(scorePos, outOfTheWayPos))
                 .setLinearHeadingInterpolation(scorePos.getHeading(), outOfTheWayPos.getHeading())
                 .build();
+        farStartToScore = follower.pathBuilder()
+                .addPath(new BezierCurve(farStartPos, farscorePos))
+                .setLinearHeadingInterpolation(farStartPos.getHeading(), farscorePos.getHeading())
+                .build();
+        farscoreToSpikeMark1 = follower.pathBuilder()
+                .addPath(new BezierCurve(farscorePos, new Pose(spikeMark1PosPre.getX() + 25, spikeMark1PosPre.getY(), spikeMark1PosPre.getHeading()),
+                        spikeMark1PosPre, spikeMark1PosPre))
+                .setLinearHeadingInterpolation(farscorePos.getHeading(), spikeMark1PosPre.getHeading())
+                .build();
+
+        farScoreToHuman = follower.pathBuilder()
+                .addPath(new BezierCurve(farscorePos, HumanArtifacts))
+                .setLinearHeadingInterpolation(farscorePos.getHeading(), HumanArtifacts.getHeading())
+                .build();
+
+        HumanCollect = follower.pathBuilder()
+                .addPath(new BezierCurve(HumanArtifacts, HumanZone))
+                .setLinearHeadingInterpolation(HumanArtifacts.getHeading(), HumanZone.getHeading())
+                .build();
+
+        HumanTofarScore = follower.pathBuilder()
+                .addPath(new BezierCurve(HumanZone, farscorePos))
+                .setLinearHeadingInterpolation(HumanZone.getHeading(), farscorePos.getHeading())
+                .build();
+        spikeMark1EndTofarscore = follower.pathBuilder()
+                .addPath(new BezierCurve(spikeMark1PosOuter, farscorePos))
+                .setLinearHeadingInterpolation(spikeMark1PosOuter.getHeading(), farscorePos.getHeading())
+                .build();
+        farscoreToPark = follower.pathBuilder()
+                .addPath(new BezierCurve(farscorePos, new Pose(42.0, 15.0, Math.toRadians(180)), farParkPos))
+                .setLinearHeadingInterpolation(farscorePos.getHeading(), farParkPos.getHeading())
+                .build();
+
 
         // Far start to park
         farStartToPark = follower.pathBuilder()
@@ -186,214 +186,190 @@ public class TrajectoryFactory {
                 ))
                 .setLinearHeadingInterpolation(farStartPos.getHeading(), farParkPos.getHeading())
                 .build();
-
-        farscoreToPark = follower.pathBuilder()
-                .addPath(new BezierCurve(farscorePos, new Pose(42.0, 15.0, Math.toRadians(180)), farParkPos))
-                .setLinearHeadingInterpolation(farscorePos.getHeading(), farParkPos.getHeading())
-                .build();
     }
 
     private static void buildRedTrajectories(Follower follower) {
-        // Goal start directly to score (mirrored)
-        goalToScore = follower.pathBuilder()
-                .addPath(new BezierLine(
-                        mirrorPose(goalStartPos),
-                        mirrorPose(scorePos)
-                ))
-                .setLinearHeadingInterpolation(
-                        mirrorPose(goalStartPos).getHeading(),
-                        mirrorPose(scorePos).getHeading()
-                )
+        // Goal start directly to score (mirrored using built-in mirror() method)
+        farscoreToPark = follower.pathBuilder()
+                .addPath(new BezierCurve(farscorePos.mirror(), new Pose(42.0, 15.0, Math.toRadians(180)).mirror(), farParkPos.mirror()))
+                .setLinearHeadingInterpolation(farscorePos.mirror().getHeading(), farParkPos.mirror().getHeading())
+                .build();
+
+        spikeMark1EndTofarscore = follower.pathBuilder()
+                .addPath(new BezierCurve(spikeMark1PosOuter.mirror(), farscorePos.mirror()))
+                .setLinearHeadingInterpolation(spikeMark1PosOuter.mirror().getHeading(), farscorePos.mirror().getHeading())
+                .build();
+
+        farscoreToSpikeMark1 = follower.pathBuilder()
+                .addPath(new BezierCurve(farscorePos.mirror(), new Pose(spikeMark1PosPre.getX() + 30, spikeMark1PosPre.getY(), spikeMark1PosPre.getHeading()).mirror(),
+                        spikeMark1PosPre.mirror()))
+                .setLinearHeadingInterpolation(farscorePos.mirror().getHeading(), spikeMark1PosPre.mirror().getHeading())
+                .build();
+
+        farScoreToHuman = follower.pathBuilder()
+                .addPath(new BezierCurve(farscorePos.mirror(), HumanArtifacts.mirror()))
+                .setLinearHeadingInterpolation(farscorePos.mirror().getHeading(), HumanArtifacts.mirror().getHeading())
+                .build();
+
+        HumanCollect = follower.pathBuilder()
+                .addPath(new BezierCurve(HumanArtifacts.mirror(), HumanZone.mirror()))
+                .setLinearHeadingInterpolation(HumanArtifacts.mirror().getHeading(), HumanZone.mirror().getHeading())
+                .build();
+
+        HumanTofarScore = follower.pathBuilder()
+                .addPath(new BezierCurve(HumanZone.mirror(), farscorePos.mirror()))
+                .setLinearHeadingInterpolation(HumanZone.mirror().getHeading(), farscorePos.mirror().getHeading())
                 .build();
 
         farStartToScore = follower.pathBuilder()
-                .addPath(new BezierCurve(mirrorPose(farStartPos), mirrorPose(farscorePos)))
-                .setLinearHeadingInterpolation(mirrorPose(farStartPos).getHeading(), mirrorPose(farscorePos).getHeading())
+                .addPath(new BezierCurve(farStartPos.mirror(), farscorePos.mirror()))
+                .setLinearHeadingInterpolation(farStartPos.mirror().getHeading(), farscorePos.mirror().getHeading())
+                .build();
+
+        goalToScore = follower.pathBuilder()
+                .addPath(new BezierLine(
+                        goalStartPos.mirror(),
+                        scorePos.mirror()
+                ))
+                .setLinearHeadingInterpolation(
+                        goalStartPos.mirror().getHeading(),
+                        scorePos.mirror().getHeading()
+                )
                 .build();
 
         // Score to spike mark 1 (mirrored)
         scoreToSpikeMark1 = follower.pathBuilder()
                 .addPath(new BezierCurve(
-                        mirrorPose(scorePos),
-                        new Pose(mirrorX(spikeMark1PosPre.getX() + 30), spikeMark1PosPre.getY(), mirrorHeading(spikeMark1PosPre.getHeading())),
-                        mirrorPose(spikeMark1PosPre)
+                        scorePos.mirror(),
+                        new Pose(spikeMark1PosPre.getX() + 30, spikeMark1PosPre.getY(), spikeMark1PosPre.getHeading()).mirror(),
+                        spikeMark1PosPre.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(scorePos).getHeading(),
-                        mirrorPose(spikeMark1PosPre).getHeading()
+                        scorePos.mirror().getHeading(),
+                        spikeMark1PosPre.mirror().getHeading()
                 )
-                .build();
-
-        farscoreToSpikeMark1 = follower.pathBuilder()
-                .addPath(new BezierCurve(mirrorPose(farscorePos), new Pose(mirrorX(spikeMark1PosPre.getX() + 30), spikeMark1PosPre.getY(), mirrorHeading(spikeMark1PosPre.getHeading())),
-                        mirrorPose(spikeMark1PosPre)))
-                .setLinearHeadingInterpolation(mirrorPose(farscorePos).getHeading(), mirrorPose(spikeMark1PosPre).getHeading())
-                .build();
-
-        farScoreToHuman = follower.pathBuilder()
-                .addPath(new BezierCurve(mirrorPose(farscorePos), mirrorPose(HumanArtifacts)))
-                .setLinearHeadingInterpolation(mirrorPose(farscorePos).getHeading(), mirrorPose(HumanArtifacts).getHeading())
-                .build();
-
-        HumanCollect = follower.pathBuilder()
-                .addPath(new BezierCurve(mirrorPose(HumanArtifacts), mirrorPose(HumanZone)))
-                .setLinearHeadingInterpolation(mirrorPose(HumanArtifacts).getHeading(), mirrorPose(HumanZone).getHeading())
-                .build();
-
-        HumanTofarScore = follower.pathBuilder()
-                .addPath(new BezierCurve(mirrorPose(HumanZone), mirrorPose(farscorePos)))
-                .setLinearHeadingInterpolation(mirrorPose(HumanZone).getHeading(), mirrorPose(farscorePos).getHeading())
                 .build();
 
         // Spike mark 1 to end (mirrored)
         spikeMark1ToEnd = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        mirrorPose(spikeMark1PosPre),
-                        mirrorPose(spikeMark1PosOuter)
+                        spikeMark1PosPre.mirror(),
+                        spikeMark1PosOuter.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(spikeMark1PosPre).getHeading(),
-                        mirrorPose(spikeMark1PosOuter).getHeading()
+                        spikeMark1PosPre.mirror().getHeading(),
+                        spikeMark1PosOuter.mirror().getHeading()
                 )
                 .build();
 
         // Spike mark 1 end to score (mirrored)
         spikeMark1EndToScore = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        mirrorPose(spikeMark1PosOuter),
-                        mirrorPose(scorePos)
+                        spikeMark1PosOuter.mirror(),
+                        scorePos.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(spikeMark1PosOuter).getHeading(),
-                        mirrorPose(scorePos).getHeading()
+                        spikeMark1PosOuter.mirror().getHeading(),
+                        scorePos.mirror().getHeading()
                 )
                 .build();
-
-        spikeMark1EndTofarscore = follower.pathBuilder()
-                .addPath(new BezierCurve(mirrorPose(spikeMark1PosOuter), mirrorPose(farscorePos)))
-                .setLinearHeadingInterpolation(mirrorPose(spikeMark1PosOuter).getHeading(), mirrorPose(farscorePos).getHeading())
-                .build();
-
-
 
         // Score to spike mark 2 (mirrored)
         scoreToSpikeMark2 = follower.pathBuilder()
                 .addPath(new BezierCurve(
-                        mirrorPose(scorePos),
-                        new Pose(mirrorX(spikeMark2PosPre.getX() + 25), spikeMark2PosPre.getY(), mirrorHeading(spikeMark2PosPre.getHeading())),
-                        mirrorPose(spikeMark2PosPre)
+                        scorePos.mirror(),
+                        new Pose(spikeMark2PosPre.getX() + 25, spikeMark2PosPre.getY(), spikeMark2PosPre.getHeading()).mirror(),
+                        spikeMark2PosPre.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(scorePos).getHeading(),
-                        mirrorPose(spikeMark2PosPre).getHeading()
+                        scorePos.mirror().getHeading(),
+                        spikeMark2PosPre.mirror().getHeading()
                 )
                 .build();
 
         // Spike mark 2 to end (mirrored)
         spikeMark2ToEnd = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        mirrorPose(spikeMark2PosPre),
-                        mirrorPose(spikeMark2PosOuter)
+                        spikeMark2PosPre.mirror(),
+                        spikeMark2PosOuter.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(spikeMark2PosPre).getHeading(),
-                        mirrorPose(spikeMark2PosOuter).getHeading()
+                        spikeMark2PosPre.mirror().getHeading(),
+                        spikeMark2PosOuter.mirror().getHeading()
                 )
                 .build();
 
         // Spike mark 2 end to score (mirrored)
         spikeMark2EndToScore = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        mirrorPose(spikeMark2PosOuter),
-                        mirrorPose(scorePos)
+                        spikeMark2PosOuter.mirror(),
+                        scorePos.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(spikeMark2PosOuter).getHeading(),
-                        mirrorPose(scorePos).getHeading()
+                        spikeMark2PosOuter.mirror().getHeading(),
+                        scorePos.mirror().getHeading()
                 )
                 .build();
 
         // Score to spike mark 3 (mirrored)
         scoreToSpikeMark3 = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        mirrorPose(scorePos),
-                        mirrorPose(spikeMark3PosPre)
+                        scorePos.mirror(),
+                        spikeMark3PosPre.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(scorePos).getHeading(),
-                        mirrorPose(spikeMark3PosPre).getHeading()
+                        scorePos.mirror().getHeading(),
+                        spikeMark3PosPre.mirror().getHeading()
                 )
                 .build();
 
         // Spike mark 3 to end (mirrored)
         spikeMark3ToEnd = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        mirrorPose(spikeMark3PosPre),
-                        mirrorPose(spikeMark3PosOuter)
+                        spikeMark3PosPre.mirror(),
+                        spikeMark3PosOuter.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(spikeMark3PosPre).getHeading(),
-                        mirrorPose(spikeMark3PosOuter).getHeading()
+                        spikeMark3PosPre.mirror().getHeading(),
+                        spikeMark3PosOuter.mirror().getHeading()
                 )
                 .build();
 
         // Spike mark 3 end to score (mirrored)
         spikeMark3EndToScore = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        mirrorPose(spikeMark3PosOuter),
-                        mirrorPose(scorePos)
+                        spikeMark3PosOuter.mirror(),
+                        scorePos.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(spikeMark3PosOuter).getHeading(),
-                        mirrorPose(scorePos).getHeading()
+                        spikeMark3PosOuter.mirror().getHeading(),
+                        scorePos.mirror().getHeading()
                 )
                 .build();
 
         // Score to out of the way (mirrored)
         scoreToOutOfTheWay = follower.pathBuilder()
                 .addPath(new BezierLine(
-                        mirrorPose(scorePos),
-                        mirrorPose(outOfTheWayPos)
+                        scorePos.mirror(),
+                        outOfTheWayPos.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(scorePos).getHeading(),
-                        mirrorPose(outOfTheWayPos).getHeading()
+                        scorePos.mirror().getHeading(),
+                        outOfTheWayPos.mirror().getHeading()
                 )
                 .build();
 
         // Far start to park (mirrored)
         farStartToPark = follower.pathBuilder()
                 .addPath(new BezierCurve(
-                        mirrorPose(farStartPos),
-                        new Pose(mirrorX(42.0), 15.0, mirrorHeading(Math.toRadians(180))),
-                        mirrorPose(farParkPos)
+                        farStartPos.mirror(),
+                        new Pose(42.0, 15.0, Math.toRadians(180)).mirror(),
+                        farParkPos.mirror()
                 ))
                 .setLinearHeadingInterpolation(
-                        mirrorPose(farStartPos).getHeading(),
-                        mirrorPose(farParkPos).getHeading()
+                        farStartPos.mirror().getHeading(),
+                        farParkPos.mirror().getHeading()
                 )
                 .build();
-
-        farscoreToPark = follower.pathBuilder()
-                .addPath(new BezierCurve(mirrorPose(farscorePos), new Pose(42.0, 15.0, mirrorHeading(Math.toRadians(180))), mirrorPose(farParkPos)))
-                .setLinearHeadingInterpolation(mirrorPose(farscorePos).getHeading(), mirrorPose(farParkPos).getHeading())
-                .build();
-    }
-
-    // Helper methods for mirroring
-    private static Pose mirrorPose(Pose pose) {
-        return new Pose(
-                144 - pose.getX(),
-                pose.getY(),
-                Math.PI - pose.getHeading()
-        );
-    }
-
-    private static double mirrorX(double x) {
-        return 144 - x;
-    }
-
-    private static double mirrorHeading(double heading) {
-        return Math.PI - heading;
     }
 }

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.blueauto;
+package org.firstinspires.ftc.teamcode.opmodes.redauto;
 
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import java.util.*;
 
-@Autonomous(name = "🔵 9-Ball Auto Blue", group = "Blue", preselectTeleOp = "TeleOpBlue")
-public class NineBallAutoBlue extends NextFTCOpMode {
+@Autonomous(name = "🔴 9-Ball Auto Red", group = "Red", preselectTeleOp = "TeleOpRed")
+public class NineBallAutoRed extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
@@ -58,7 +58,7 @@ public class NineBallAutoBlue extends NextFTCOpMode {
         }
     }
 
-    public NineBallAutoBlue() {
+    public NineBallAutoRed() {
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
         ll = LL.INSTANCE;
@@ -78,11 +78,11 @@ public class NineBallAutoBlue extends NextFTCOpMode {
 
         follower = PedroComponent.follower();
 
-        // Build BLUE alliance trajectories (sets LL.ID = 24)
-        TrajectoryFactory.buildTrajectories(follower, false);
-        follower.setStartingPose(TrajectoryFactory.goalStartPos);
+        // Build RED alliance trajectories (sets LL.ID = 20)
+        TrajectoryFactory.buildTrajectories(follower, true);
+        follower.setStartingPose(TrajectoryFactory.goalStartPos.mirror());
 
-        telemetry.addLine("🔵 9-Ball State Machine Ready (EARLY SPINUP)");
+        telemetry.addLine("🔴 9-Ball State Machine Ready (EARLY SPINUP)");
         telemetry.addData("Target Tag ID", LL.ID);
         telemetry.update();
     }
@@ -98,18 +98,13 @@ public class NineBallAutoBlue extends NextFTCOpMode {
     public void onUpdate() {
         follower.update();
 
-        // Execute scheduled actions with safety check
+        // Execute scheduled actions
         long now = System.currentTimeMillis();
         Iterator<ScheduledAction> it = scheduledActions.iterator();
         while (it.hasNext()) {
             ScheduledAction action = it.next();
             if (now >= action.executeTime) {
-                try {
-                    action.action.run();
-                } catch (Exception e) {
-                    // Log but continue if an action fails
-                    telemetry.addData("Action Error", e.getMessage());
-                }
+                action.action.run();
                 it.remove();
             }
         }
@@ -252,18 +247,13 @@ public class NineBallAutoBlue extends NextFTCOpMode {
                 break;
 
             case COMPLETE:
-                // Stop all systems safely
-                try {
-                    intake.off.schedule();
-                    outtake.spinServo1.setPower(0);
-                    outtake.spinServo2.setPower(0);
-                    outtake.Tmotor.setPower(0);
-                    outtake.Bmotor.setPower(0);
-                    LL.targetVel = 0.0;
-                    Outtake.shooting = false;
-                } catch (Exception e) {
-                    // Silently handle cleanup errors
-                }
+                intake.off.schedule();
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
+                outtake.Tmotor.setPower(0);
+                outtake.Bmotor.setPower(0);
+                LL.targetVel = 0.0;
+                Outtake.shooting = false;
                 break;
         }
     }
@@ -353,19 +343,12 @@ public class NineBallAutoBlue extends NextFTCOpMode {
 
     @Override
     public void onStop() {
-        // Clear scheduled actions first to prevent index errors
-        scheduledActions.clear();
-
-        try {
-            intake.off.schedule();
-            outtake.spinServo1.setPower(0);
-            outtake.spinServo2.setPower(0);
-            outtake.Tmotor.setPower(0);
-            outtake.Bmotor.setPower(0);
-            LL.targetVel = 0.0;
-            Outtake.shooting = false;
-        } catch (Exception e) {
-            // Silently handle cleanup errors at end
-        }
+        intake.off.schedule();
+        outtake.spinServo1.setPower(0);
+        outtake.spinServo2.setPower(0);
+        outtake.Tmotor.setPower(0);
+        outtake.Bmotor.setPower(0);
+        LL.targetVel = 0.0;
+        Outtake.shooting = false;
     }
 }

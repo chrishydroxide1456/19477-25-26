@@ -11,9 +11,9 @@ public class Routines {
     private final Drive drive;
 
     public static boolean overriding = false;
+    public static boolean outtaking = false;
 
     // Timing constants
-    private static final long FLYWHEEL_SPINUP_MS = 750;
     private static final long INTAKE_REVERSE_START_MS = 1300-800;
     private static final long INTAKE_STOP_MS = 1500-800;          // NEW: Stop 150ms after reversing starts
     private static final long GATE_OPEN_MS = 1300-800;
@@ -55,31 +55,32 @@ public class Routines {
         };
     }
 
-    public Command testoutSequence() {
+    @Deprecated
+    public Command fullOuttakeSequenceAuto() {
         overriding = false;
+        outtaking = true;
 
         return new Command() {
             private long sequenceStart = 0;
             private boolean gateOpened = false;
             private boolean intakeReversed = false;
-            private boolean intakeStopped = false;      // NEW: Track when we stop
+            private boolean intakeStopped = false;
             private boolean intakeForwarded = false;
 
             @Override
             public void start() {
-                if (!LL.tagVisible) {
-                    return;
-                }
-
                 // Stop spin servos immediately
                 outtake.spinServo1.setPower(0);
                 outtake.spinServo2.setPower(0);
 
+                // Set fixed velocity for auto
+                LL.targetVel = 1600.0;
                 Outtake.shooting = true;
+
                 sequenceStart = System.currentTimeMillis();
                 gateOpened = false;
                 intakeReversed = false;
-                intakeStopped = false;      // NEW
+                intakeStopped = false;
                 intakeForwarded = false;
             }
 
@@ -95,7 +96,7 @@ public class Routines {
                     intakeReversed = true;
                 }
 
-                // NEW: Stop everything at 1450ms (150ms of reversing)
+                // Stop everything at 1450ms (150ms of reversing)
                 if (elapsed > INTAKE_STOP_MS && !intakeStopped) {
                     Intake.INSTANCE.off.schedule();
                     outtake.spinServo1.setPower(0);
@@ -139,12 +140,97 @@ public class Routines {
                 Intake.INSTANCE.off.schedule();
                 outtake.spinServo1.setPower(0);
                 outtake.spinServo2.setPower(0);
+                outtaking = false;
             }
         };
     }
 
-    public Command fullOuttakeSequence() {
-        return testoutSequence();
+    public Command testoutSequence() {
+        overriding = false;
+
+        return new Command() {
+            private long sequenceStart = 0;
+            private boolean gateOpened = false;
+            private boolean intakeReversed = false;
+            private boolean intakeStopped = false;      // NEW: Track when we stop
+            private boolean intakeForwarded = false;
+
+            @Override
+            public void start() {
+//                if (!LL.tagVisible) {
+//                    return;
+//                }
+
+                // Stop spin servos immediately
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
+
+                Outtake.shooting = true;
+                sequenceStart = System.currentTimeMillis();
+                gateOpened = false;
+                intakeReversed = false;
+                intakeStopped = false;      // NEW
+                intakeForwarded = false;
+            }
+
+            @Override
+            public void update() {
+                long elapsed = System.currentTimeMillis() - sequenceStart;
+
+                // Reverse intake at 1300ms AND spin servos backward
+                if (elapsed > INTAKE_REVERSE_START_MS && !intakeReversed) {
+                    Intake.INSTANCE.revmoving.schedule();
+                    outtake.spinServo1.setPower(-1.0);
+                    outtake.spinServo2.setPower(-1.0);
+                    intakeReversed = true;
+                }
+
+                // NEW: Stop everything at 1450ms (150ms of reversing)
+                if (elapsed > INTAKE_STOP_MS && !intakeStopped) {
+                    Intake.INSTANCE.off.schedule();
+                    outtake.spinServo1.setPower(0);
+                    outtake.spinServo2.setPower(0);
+                    intakeStopped = true;
+                }
+
+                // Open gate at 1300ms
+                if (elapsed > GATE_OPEN_MS && !gateOpened) {
+                    Outtake.INSTANCE.open.schedule();
+                    gateOpened = true;
+                }
+
+                // Start intake forward at 1700ms (250ms pause after stopping)
+                if (elapsed > INTAKE_FORWARD_START_MS && !intakeForwarded) {
+                    Intake.INSTANCE.onmoving.schedule();
+                    outtake.spinServo1.setPower(0.75);// was 0 before
+                    outtake.spinServo2.setPower(0.75);// was 0 before
+                    intakeForwarded = true;
+                }
+
+                // Complete sequence at 3250ms
+                if (elapsed > SEQUENCE_DURATION_MS) {
+                    Outtake.INSTANCE.close.schedule();
+                    Intake.INSTANCE.off.schedule();
+                    outtake.spinServo1.setPower(0);
+                    outtake.spinServo2.setPower(0);
+                    Outtake.shooting = false;
+                }
+            }
+
+            @Override
+            public boolean isDone() {
+                return System.currentTimeMillis() - sequenceStart > SEQUENCE_DURATION_MS;
+            }
+
+            @Override
+            public void stop(boolean interrupted) {
+                Outtake.shooting = false;
+                Outtake.INSTANCE.close.schedule();
+                Intake.INSTANCE.off.schedule();
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
+            }
+        };
     }
 
     public Command inSequence() {

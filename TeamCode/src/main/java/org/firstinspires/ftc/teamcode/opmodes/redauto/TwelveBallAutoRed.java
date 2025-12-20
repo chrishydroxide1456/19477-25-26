@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.blueauto;
+package org.firstinspires.ftc.teamcode.opmodes.redauto;
 
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import java.util.*;
 
-@Autonomous(name = "🔵 9-Ball Auto Blue", group = "Blue", preselectTeleOp = "TeleOpBlue")
-public class NineBallAutoBlue extends NextFTCOpMode {
+@Autonomous(name = "🔴 12-Ball Auto Red", group = "Red", preselectTeleOp = "TeleOpRed")
+public class TwelveBallAutoRed extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
@@ -27,14 +27,14 @@ public class NineBallAutoBlue extends NextFTCOpMode {
     private List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     // Timing constants (tunable)
-    private static final long SPINUP_DELAY_BEFORE_SHOOT = 100;  // Minimal delay, motors already spinning
-    private static final long SHOOT_SEQUENCE_TIME = 2500;
+    private static final long SHOOT_SEQUENCE_TIME = 2900;
     private static final long INTAKE_START_DELAY = 400;
 
     // Shot velocities (tunable for each shot)
-    private static final double SHOT_1_VELOCITY = 1450.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 1465.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 1475.0;  // After spike mark 2
+    private static final double SHOT_1_VELOCITY = 1480.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 1500.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 1495.0;  // After spike mark 2
+    private static final double SHOT_4_VELOCITY = 1495.0; // After spike mark 3
 
     private enum AutoState {
         IDLE,
@@ -44,6 +44,8 @@ public class NineBallAutoBlue extends NextFTCOpMode {
         DRIVE_TO_SPIKE_1, INTAKE_SPIKE_1, DRIVE_BACK_TO_SCORE_2, SHOOT_2,
         // Third volley (spike mark 2)
         DRIVE_TO_SPIKE_2, INTAKE_SPIKE_2, DRIVE_BACK_TO_SCORE_3, SHOOT_3,
+        // Fourth volley (spike mark 3)
+        DRIVE_TO_SPIKE_3, INTAKE_SPIKE_3, DRIVE_BACK_TO_SCORE_4, SHOOT_4,
         // Park
         DRIVE_TO_PARK, COMPLETE
     }
@@ -58,7 +60,7 @@ public class NineBallAutoBlue extends NextFTCOpMode {
         }
     }
 
-    public NineBallAutoBlue() {
+    public TwelveBallAutoRed() {
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
         ll = LL.INSTANCE;
@@ -78,11 +80,11 @@ public class NineBallAutoBlue extends NextFTCOpMode {
 
         follower = PedroComponent.follower();
 
-        // Build BLUE alliance trajectories (sets LL.ID = 24)
-        TrajectoryFactory.buildTrajectories(follower, false);
-        follower.setStartingPose(TrajectoryFactory.goalStartPos);
+        // Build RED alliance trajectories (sets LL.ID = 20)
+        TrajectoryFactory.buildTrajectories(follower, true);
+        follower.setStartingPose(TrajectoryFactory.goalStartPos.mirror());
 
-        telemetry.addLine("🔵 9-Ball State Machine Ready (EARLY SPINUP)");
+        telemetry.addLine("🔴 12-Ball State Machine Ready");
         telemetry.addData("Target Tag ID", LL.ID);
         telemetry.update();
     }
@@ -98,18 +100,13 @@ public class NineBallAutoBlue extends NextFTCOpMode {
     public void onUpdate() {
         follower.update();
 
-        // Execute scheduled actions with safety check
+        // Execute scheduled actions
         long now = System.currentTimeMillis();
         Iterator<ScheduledAction> it = scheduledActions.iterator();
         while (it.hasNext()) {
             ScheduledAction action = it.next();
             if (now >= action.executeTime) {
-                try {
-                    action.action.run();
-                } catch (Exception e) {
-                    // Log but continue if an action fails
-                    telemetry.addData("Action Error", e.getMessage());
-                }
+                action.action.run();
                 it.remove();
             }
         }
@@ -146,6 +143,19 @@ public class NineBallAutoBlue extends NextFTCOpMode {
                 if (!follower.isBusy()) changeState(AutoState.SHOOT_3);
                 break;
             case SHOOT_3:
+                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_SPIKE_3);
+                break;
+
+            case DRIVE_TO_SPIKE_3:
+                if (!follower.isBusy()) changeState(AutoState.INTAKE_SPIKE_3);
+                break;
+            case INTAKE_SPIKE_3:
+                if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_4);
+                break;
+            case DRIVE_BACK_TO_SCORE_4:
+                if (!follower.isBusy()) changeState(AutoState.SHOOT_4);
+                break;
+            case SHOOT_4:
                 if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_PARK);
                 break;
 
@@ -170,19 +180,19 @@ public class NineBallAutoBlue extends NextFTCOpMode {
                 // START SPINNING UP MOTORS IMMEDIATELY DURING DRIVE
                 Outtake.shooting = true;
                 LL.targetVel = SHOT_1_VELOCITY;
-//                outtake.Tmotor.setPower(0.85);  // Direct power backup
-//                outtake.Bmotor.setPower(0.85);
                 break;
 
             case SHOOT_1:
             case SHOOT_2:
             case SHOOT_3:
+            case SHOOT_4:
                 // Motors should already be at speed, execute shoot sequence immediately
                 executeShootSequence();
                 break;
 
             case DRIVE_TO_SPIKE_1:
             case DRIVE_TO_SPIKE_2:
+            case DRIVE_TO_SPIKE_3:
                 // Stop motors while collecting balls
                 Outtake.shooting = false;
                 LL.targetVel = 0.0;
@@ -192,8 +202,10 @@ public class NineBallAutoBlue extends NextFTCOpMode {
                 // Start path
                 if (newState == AutoState.DRIVE_TO_SPIKE_1) {
                     follower.followPath(TrajectoryFactory.scoreToSpikeMark1, true);
-                } else {
+                } else if (newState == AutoState.DRIVE_TO_SPIKE_2) {
                     follower.followPath(TrajectoryFactory.scoreToSpikeMark2, true);
+                } else {
+                    follower.followPath(TrajectoryFactory.scoreToSpikeMark3, true);
                 }
 
                 // Schedule intake to start after delay
@@ -212,8 +224,13 @@ public class NineBallAutoBlue extends NextFTCOpMode {
                 follower.followPath(TrajectoryFactory.spikeMark2ToEnd, true);
                 break;
 
+            case INTAKE_SPIKE_3:
+                follower.followPath(TrajectoryFactory.spikeMark3ToEnd, true);
+                break;
+
             case DRIVE_BACK_TO_SCORE_2:
             case DRIVE_BACK_TO_SCORE_3:
+            case DRIVE_BACK_TO_SCORE_4:
                 // Switch to keeping mode and stop spin servos
                 intake.keeping.schedule();
                 outtake.spinServo1.setPower(0);
@@ -225,18 +242,19 @@ public class NineBallAutoBlue extends NextFTCOpMode {
                 // Set velocity based on which shot
                 if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
                     LL.targetVel = SHOT_2_VELOCITY;
-                } else {
+                } else if (newState == AutoState.DRIVE_BACK_TO_SCORE_3) {
                     LL.targetVel = SHOT_3_VELOCITY;
+                } else {
+                    LL.targetVel = SHOT_4_VELOCITY;
                 }
-
-//                outtake.Tmotor.setPower(0.85);  // Direct power backup
-//                outtake.Bmotor.setPower(0.85);
 
                 // Start appropriate path
                 if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
                     follower.followPath(TrajectoryFactory.spikeMark1EndToScore, true);
-                } else {
+                } else if (newState == AutoState.DRIVE_BACK_TO_SCORE_3) {
                     follower.followPath(TrajectoryFactory.spikeMark2EndToScore, true);
+                } else {
+                    follower.followPath(TrajectoryFactory.spikeMark3EndToScore, true);
                 }
                 break;
 
@@ -252,18 +270,13 @@ public class NineBallAutoBlue extends NextFTCOpMode {
                 break;
 
             case COMPLETE:
-                // Stop all systems safely
-                try {
-                    intake.off.schedule();
-                    outtake.spinServo1.setPower(0);
-                    outtake.spinServo2.setPower(0);
-                    outtake.Tmotor.setPower(0);
-                    outtake.Bmotor.setPower(0);
-                    LL.targetVel = 0.0;
-                    Outtake.shooting = false;
-                } catch (Exception e) {
-                    // Silently handle cleanup errors
-                }
+                intake.off.schedule();
+                outtake.spinServo1.setPower(0);
+                outtake.spinServo2.setPower(0);
+                outtake.Tmotor.setPower(0);
+                outtake.Bmotor.setPower(0);
+                LL.targetVel = 0.0;
+                Outtake.shooting = false;
                 break;
         }
     }
@@ -280,8 +293,8 @@ public class NineBallAutoBlue extends NextFTCOpMode {
             outtake.spinServo2.setPower(-1.0);
         });
 
-        // T+150ms: Stop intake and spin servos (150ms of reversing)
-        scheduleAction(210, () -> {
+        // T+210ms: Stop intake and spin servos (210ms of reversing)
+        scheduleAction(185, () -> {
             intake.off.schedule();
             outtake.spinServo1.setPower(0);
             outtake.spinServo2.setPower(0);
@@ -292,7 +305,7 @@ public class NineBallAutoBlue extends NextFTCOpMode {
             outtake.open.schedule();
         });
 
-        // T+900ms: Start intake forward (250ms pause after stopping)
+        // T+900ms: Start intake forward
         scheduleAction(900, () -> {
             intake.autonshooting.schedule();
         });
@@ -353,19 +366,12 @@ public class NineBallAutoBlue extends NextFTCOpMode {
 
     @Override
     public void onStop() {
-        // Clear scheduled actions first to prevent index errors
-        scheduledActions.clear();
-
-        try {
-            intake.off.schedule();
-            outtake.spinServo1.setPower(0);
-            outtake.spinServo2.setPower(0);
-            outtake.Tmotor.setPower(0);
-            outtake.Bmotor.setPower(0);
-            LL.targetVel = 0.0;
-            Outtake.shooting = false;
-        } catch (Exception e) {
-            // Silently handle cleanup errors at end
-        }
+        intake.off.schedule();
+        outtake.spinServo1.setPower(0);
+        outtake.spinServo2.setPower(0);
+        outtake.Tmotor.setPower(0);
+        outtake.Bmotor.setPower(0);
+        LL.targetVel = 0.0;
+        Outtake.shooting = false;
     }
 }
