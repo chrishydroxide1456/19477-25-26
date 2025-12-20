@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import static org.firstinspires.ftc.teamcode.pedro.Tuning.follower;
+
+
 import com.pedropathing.follower.Follower;
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.delays.Delay;
@@ -163,6 +166,48 @@ public class AutoRoutines {
         );
     }
 
+    public Command farnineBallAuto() {
+        return new SequentialGroup(
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.farStartToScore,true), //far start pos to far shooting pos
+                        intake.keeping
+                ),
+                routines.fullOuttakeSequence(),
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.farScoreToHuman, true),
+                        routines.inSequence()
+                ),
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.HumanCollect, true),
+                        intake.on
+                ),
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.HumanTofarScore, true),
+                        intake.keeping
+                ),
+                routines.fullOuttakeSequence(),
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.farscoreToSpikeMark1, true),
+                        routines.inSequence()
+                ),
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark1ToEnd, true),
+                        intake.on
+                ),
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.spikeMark1EndTofarscore, true),
+                        intake.keeping
+                ),
+                routines.fullOuttakeSequence(),
+                new ParallelGroup(
+                        new FollowPath(TrajectoryFactory.farscoreToPark, true),
+                        intake.keeping
+                ),
+                routines.stopinSequence()
+
+        );
+    }
+
     /**
      * 12-ball autonomous: Score preload + all three rows of samples
      */
@@ -270,4 +315,9 @@ public class AutoRoutines {
                 new FollowPath(TrajectoryFactory.farStartToPark, true)
         );
     }
+
+    public boolean isFinished(Follower follower) {
+        return !follower.isBusy();
+    }
+
 }

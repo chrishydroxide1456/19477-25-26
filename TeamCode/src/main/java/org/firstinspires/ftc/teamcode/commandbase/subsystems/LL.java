@@ -174,6 +174,7 @@ public class LL implements Subsystem {
 
         // Clamp to motor limits
         return Math.max(800, rpm); //Math.min this might be sketch
+        //return Math.max(800, Math.min(2800, rpm));
     }
 
 }
