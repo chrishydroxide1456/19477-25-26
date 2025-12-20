@@ -101,9 +101,13 @@ public class LL implements Subsystem {
 
                 // Calculate velocity based on distance (only update when not shooting to prevent mid-shot changes)
                 if (!Outtake.shooting) {
-                    double calculatedVel = gettargetVel(distance);
-                    targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                            ? calculatedVel : 800.0;
+                    if (distance > 55.0) {
+                        targetVel = 2500.0; //tune later. also tune shot power later
+                    } else {
+                        double calculatedVel = gettargetVel(distance);
+                        targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
+                                ? calculatedVel : 800.0;
+                    }
                 }
 
             } else {
