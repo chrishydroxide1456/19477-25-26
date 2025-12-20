@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import java.util.*;
 
-@Autonomous(name = "🔵 12-Ball Auto Blue", group = "Blue", preselectTeleOp = "TeleOpBlue")
-public class TwelveBallAutoBlue extends NextFTCOpMode {
+@Autonomous(name = "🔵 12-Ball Auto Blue (Gate Path)", group = "Blue", preselectTeleOp = "TeleOpBlue")
+public class TwelveBallAutoBlueGate extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
@@ -28,20 +28,21 @@ public class TwelveBallAutoBlue extends NextFTCOpMode {
 
     // Timing constants (tunable)
     private static final long SHOOT_SEQUENCE_TIME = 2900;
-    private static final long INTAKE_START_DELAY = 1000;
+    private static final long INTAKE_START_DELAY = 3000;
+    private static final long GATE_WAIT_TIME = 1250;  // Wait at gate before continuing
 
     // Shot velocities (tunable for each shot)
-    private static final double SHOT_1_VELOCITY = 1315.0;  // Preload shot 1470
+    private static final double SHOT_1_VELOCITY = 1315.0;  // Preload shot
     private static final double SHOT_2_VELOCITY = 1365.0;  // After spike mark 1
     private static final double SHOT_3_VELOCITY = 1350.0;  // After spike mark 2
-    private static final double SHOT_4_VELOCITY = 1360.0; // After spike mark 3
+    private static final double SHOT_4_VELOCITY = 1350.0;  // After spike mark 3
 
     private enum AutoState {
         IDLE,
         // First volley (preload)
         DRIVE_TO_SCORE_1, SHOOT_1,
-        // Second volley (spike mark 1)
-        DRIVE_TO_SPIKE_1, INTAKE_SPIKE_1, DRIVE_BACK_TO_SCORE_2, SHOOT_2,
+        // Second volley (spike mark 1) - NOW USES GATE PATH
+        DRIVE_TO_SPIKE_1, INTAKE_SPIKE_1, DRIVE_TO_GATE, WAIT_AT_GATE, DRIVE_GATE_TO_SCORE_2, SHOOT_2,
         // Third volley (spike mark 2)
         DRIVE_TO_SPIKE_2, INTAKE_SPIKE_2, DRIVE_BACK_TO_SCORE_3, SHOOT_3,
         // Fourth volley (spike mark 3)
@@ -60,7 +61,7 @@ public class TwelveBallAutoBlue extends NextFTCOpMode {
         }
     }
 
-    public TwelveBallAutoBlue() {
+    public TwelveBallAutoBlueGate() {
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
         ll = LL.INSTANCE;
@@ -84,7 +85,7 @@ public class TwelveBallAutoBlue extends NextFTCOpMode {
         TrajectoryFactory.buildTrajectories(follower, false);
         follower.setStartingPose(TrajectoryFactory.goalStartPos);
 
-        telemetry.addLine("🔵 12-Ball State Machine Ready");
+        telemetry.addLine("🔵 12-Ball State Machine Ready (Gate Path)");
         telemetry.addData("Target Tag ID", LL.ID);
         telemetry.update();
     }
@@ -124,9 +125,15 @@ public class TwelveBallAutoBlue extends NextFTCOpMode {
                 if (!follower.isBusy()) changeState(AutoState.INTAKE_SPIKE_1);
                 break;
             case INTAKE_SPIKE_1:
-                if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_2);
+                if (!follower.isBusy()) changeState(AutoState.DRIVE_TO_GATE);
                 break;
-            case DRIVE_BACK_TO_SCORE_2:
+            case DRIVE_TO_GATE:
+                if (!follower.isBusy()) changeState(AutoState.WAIT_AT_GATE);
+                break;
+            case WAIT_AT_GATE:
+                if (getStateTime() > GATE_WAIT_TIME) changeState(AutoState.DRIVE_GATE_TO_SCORE_2);
+                break;
+            case DRIVE_GATE_TO_SCORE_2:
                 if (!follower.isBusy()) changeState(AutoState.SHOOT_2);
                 break;
             case SHOOT_2:
@@ -226,7 +233,30 @@ public class TwelveBallAutoBlue extends NextFTCOpMode {
                 follower.followPath(TrajectoryFactory.spikeMark3ToEnd, true);
                 break;
 
-            case DRIVE_BACK_TO_SCORE_2:
+            case DRIVE_TO_GATE:
+                // Continue intaking while driving to gate
+                follower.followPath(TrajectoryFactory.spikeMark1EndToGate, true);
+                break;
+
+            case WAIT_AT_GATE:
+                // Wait at gate position for 1 second (no action needed, just waiting)
+                // Robot continues holding balls in keeping mode
+                break;
+
+            case DRIVE_GATE_TO_SCORE_2:
+                // Switch to keeping mode and stop spin servos
+                intake.keeping.schedule();
+                outtake.spinServo1.setPower(-0.5);
+                outtake.spinServo2.setPower(-0.5);
+
+                // START SPINNING UP MOTORS DURING DRIVE BACK
+                Outtake.shooting = true;
+                LL.targetVel = SHOT_2_VELOCITY;
+
+                // Follow gate to score path
+                follower.followPath(TrajectoryFactory.gateToScore, true);
+                break;
+
             case DRIVE_BACK_TO_SCORE_3:
             case DRIVE_BACK_TO_SCORE_4:
                 // Switch to keeping mode and stop spin servos
@@ -238,18 +268,14 @@ public class TwelveBallAutoBlue extends NextFTCOpMode {
                 Outtake.shooting = true;
 
                 // Set velocity based on which shot
-                if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
-                    LL.targetVel = SHOT_2_VELOCITY;
-                } else if (newState == AutoState.DRIVE_BACK_TO_SCORE_3) {
+                if (newState == AutoState.DRIVE_BACK_TO_SCORE_3) {
                     LL.targetVel = SHOT_3_VELOCITY;
                 } else {
                     LL.targetVel = SHOT_4_VELOCITY;
                 }
 
                 // Start appropriate path
-                if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
-                    follower.followPath(TrajectoryFactory.spikeMark1EndToScore, true);
-                } else if (newState == AutoState.DRIVE_BACK_TO_SCORE_3) {
+                if (newState == AutoState.DRIVE_BACK_TO_SCORE_3) {
                     follower.followPath(TrajectoryFactory.spikeMark2EndToScore, true);
                 } else {
                     follower.followPath(TrajectoryFactory.spikeMark3EndToScore, true);
