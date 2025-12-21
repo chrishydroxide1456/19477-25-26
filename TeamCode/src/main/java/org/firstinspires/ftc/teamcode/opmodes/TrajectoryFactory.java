@@ -12,7 +12,7 @@ public class TrajectoryFactory {
     // Poses - all positions on the field
     public static Pose goalStartPos = new Pose(26.0, 130.0, Math.toRadians(-40));
     public static Pose farStartPos = new Pose(56.0, 8.0, Math.toRadians(180));
-    public static Pose farParkPos = new Pose(36.0, 8.0, Math.toRadians(180));
+    public static Pose farParkPos = new Pose(56.0, 36.0, Math.toRadians(180));
     //public static Pose scorePos = new Pose(45, 105, Math.toRadians(-47));
     public static Pose scorePos = new Pose(57, 88, Math.toRadians(-48.5));
 
