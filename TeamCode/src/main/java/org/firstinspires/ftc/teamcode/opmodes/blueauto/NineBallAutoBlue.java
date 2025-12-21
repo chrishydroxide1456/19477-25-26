@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.opmodes.TrajectoryFactory;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import java.util.*;
-
+@Deprecated
 @Autonomous(name = "🔵 9-Ball Auto Blue", group = "Blue", preselectTeleOp = "TeleOpBlue")
 public class NineBallAutoBlue extends NextFTCOpMode {
 

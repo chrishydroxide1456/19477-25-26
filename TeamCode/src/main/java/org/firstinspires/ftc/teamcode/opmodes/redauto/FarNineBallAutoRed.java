@@ -31,9 +31,9 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
     private static final long INTAKE_START_DELAY = 400;
 
     // Shot velocities (tunable for each shot). tune later
-    private static final double SHOT_1_VELOCITY = 2200.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 2200.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 2200.0;  // After spike mark 2
+    private static final double SHOT_1_VELOCITY = 4400.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 4400.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 4400.0;  // After spike mark 2
 
     private enum AutoState {
         IDLE,
@@ -190,7 +190,7 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
                 if (newState == AutoState.DRIVE_TO_HUMAN) {
                     follower.followPath(TrajectoryFactory.farScoreToHuman, true);
                 } else { //leave off here
-                    follower.followPath(TrajectoryFactory.farscoreToSpikeMark3, true);
+                    follower.followPath(TrajectoryFactory.farscoreToSpikeMark1, true);
                 }
 
                 // Schedule intake to start after delay
@@ -231,7 +231,7 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
                 if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
                     follower.followPath(TrajectoryFactory.HumanTofarScore, true);
                 } else {
-                    follower.followPath(TrajectoryFactory.spikeMark3EndTofarscore, true);
+                    follower.followPath(TrajectoryFactory.spikeMark1EndTofarscore, true);
                 }
                 break;
 

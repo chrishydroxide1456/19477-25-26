@@ -28,7 +28,7 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
 
     // Timing constants (tunable)
     private static final long SHOOT_SEQUENCE_TIME = 2900;
-    private static final long INTAKE_START_DELAY = 1000;
+    private static final long INTAKE_START_DELAY = 3000;
 
     // Shot velocities (tunable for each shot)
     private static final double SHOT_1_VELOCITY = 1315.0;  // Preload shot 1470

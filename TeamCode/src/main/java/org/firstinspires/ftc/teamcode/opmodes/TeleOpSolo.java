@@ -43,7 +43,7 @@ public class TeleOpSolo extends NextFTCOpMode {
         );
 
         // LEFT BUMPER = AUTO ALIGN
-        button(() -> gamepad2.left_bumper).whenBecomesTrue(() -> {
+        button(() -> gamepad2.left_bumper).whenBecomesFalse(() -> {
             if (tagVisible) {
                 routines.autoAlignOnly().schedule();
             }

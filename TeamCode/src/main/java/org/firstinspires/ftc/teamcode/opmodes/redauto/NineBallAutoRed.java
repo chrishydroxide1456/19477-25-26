@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import java.util.*;
 
+@Deprecated
 @Autonomous(name = "🔴 9-Ball Auto Red", group = "Red", preselectTeleOp = "TeleOpRed")
 public class NineBallAutoRed extends NextFTCOpMode {
 

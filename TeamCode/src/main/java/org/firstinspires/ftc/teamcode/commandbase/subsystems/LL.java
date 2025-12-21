@@ -102,7 +102,9 @@ public class LL implements Subsystem {
                 // Calculate velocity based on distance (only update when not shooting to prevent mid-shot changes)
                 if (!Outtake.shooting) {
                     if (distance > 55.0) {
-                        targetVel = 2500.0; //tune later. also tune shot power later
+                        double calculatedVel = gettargetVel(distance);
+                        targetVel = (!Double.isNaN(calculatedVel + 3500.0) && !Double.isInfinite(calculatedVel))
+                                ? calculatedVel : 800.0; //tune later. also tune shot power later
                     } else {
                         double calculatedVel = gettargetVel(distance);
                         targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
@@ -171,7 +173,7 @@ public class LL implements Subsystem {
         double Vball = Math.sqrt(numerator / (2.0 * cosAngle * cosAngle * denom));
 
         // Account for energy loss (flywheel to ball efficiency)
-        double Vwheel = Vball / 0.7;
+        double Vwheel = Vball / 0.72;
 
         // Convert linear velocity (m/s) to RPM
         double rpm = (Vwheel / (2.0 * Math.PI * flywheelR)) * 60.0;
