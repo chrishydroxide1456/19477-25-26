@@ -28,13 +28,13 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
 
     // Timing constants (tunable)
     private static final long SHOOT_SEQUENCE_TIME = 2900;
-    private static final long INTAKE_START_DELAY = 400;
+    private static final long INTAKE_START_DELAY = 1000;
 
     // Shot velocities (tunable for each shot)
-    private static final double SHOT_1_VELOCITY = 1330.0;  // Preload shot 1470
+    private static final double SHOT_1_VELOCITY = 1315.0;  // Preload shot 1470
     private static final double SHOT_2_VELOCITY = 1365.0;  // After spike mark 1
     private static final double SHOT_3_VELOCITY = 1350.0;  // After spike mark 2
-    private static final double SHOT_4_VELOCITY = 1350.0; // After spike mark 3
+    private static final double SHOT_4_VELOCITY = 1360.0; // After spike mark 3
 
     private enum AutoState {
         IDLE,
@@ -196,6 +196,7 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
                 // Stop motors while collecting balls
                 Outtake.shooting = false;
                 LL.targetVel = 0.0;
+                intake.on.schedule();
 //                outtake.Tmotor.setPower(0);
 //                outtake.Bmotor.setPower(0);
 
@@ -210,9 +211,8 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
 
                 // Schedule intake to start after delay
                 scheduleAction(INTAKE_START_DELAY, () -> {
-                    intake.on.schedule();
-                    outtake.spinServo1.setPower(-1.0);
-                    outtake.spinServo2.setPower(-1.0);
+                    outtake.spinServo1.setPower(-0.7);
+                    outtake.spinServo2.setPower(-0.7);
                 });
                 break;
 
@@ -233,8 +233,8 @@ public class TwelveBallAutoRed extends NextFTCOpMode {
             case DRIVE_BACK_TO_SCORE_4:
                 // Switch to keeping mode and stop spin servos
                 intake.keeping.schedule();
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
+                outtake.spinServo1.setPower(-0.5);
+                outtake.spinServo2.setPower(-0.5);
 
                 // START SPINNING UP MOTORS DURING DRIVE BACK
                 Outtake.shooting = true;

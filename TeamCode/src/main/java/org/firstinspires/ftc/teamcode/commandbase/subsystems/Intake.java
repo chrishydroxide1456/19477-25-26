@@ -17,7 +17,7 @@ public class Intake implements Subsystem {
     public Command onmoving = new SetPower(inmotor, 0.9);//0.65 TODO:Redo this if it fails
     public Command autonshooting = new SetPower(inmotor, 0.70);
     public Command revmoving = new SetPower(inmotor, -0.9);
-    public Command keeping = new SetPower(inmotor, 0.87);
+    public Command keeping = new SetPower(inmotor, 0.95);
     public Command off = new SetPower(inmotor, 0.0).requires(this);
     public Command reverse = new SetPower(inmotor, -1.0).requires(this);
 
