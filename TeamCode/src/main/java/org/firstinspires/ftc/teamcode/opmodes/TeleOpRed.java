@@ -109,6 +109,17 @@ public class TeleOpRed extends NextFTCOpMode {
         double TmotorRPM = outtake.Tmotor.getVelocity();
         double BmotorRPM = outtake.Bmotor.getVelocity();
 
+        // Beam break status
+        telemetry.addLine("=== BEAM BREAK SENSOR ===");
+        telemetry.addData("Beam Status", outtake.getBeamBreakState() ? "🔴 BROKEN" : "✅ INTACT");
+        if (outtake.getBeamBreakState()) {
+            telemetry.addData("Duration", "%.1fs", outtake.getBeamBrokenDuration() / 1000.0);
+            if (outtake.isBeamBrokenLongEnough()) {
+                telemetry.addData("LED", "🟣 PURPLE (>500ms)");
+            }
+        }
+        telemetry.addLine();
+
         if (tagVisible) {
             telemetry.addLine("=== SHOOT SYSTEM ===");
             telemetry.addData("Distance", "%.1f in", distance);
@@ -136,9 +147,6 @@ public class TeleOpRed extends NextFTCOpMode {
             telemetry.addData("Bottom Motor RPM", "%.0f", BmotorRPM);
         }
         telemetry.update();
-
-        // REMOVED: The duplicate override logic that was causing the race condition
-        // The LL subsystem now handles all targetVel setting in its periodic() method
     }
 
 }

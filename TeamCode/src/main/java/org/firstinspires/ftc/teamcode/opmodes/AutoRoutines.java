@@ -124,7 +124,7 @@ public class AutoRoutines {
                 ),
                 routines.fullOuttakeSequenceAuto(),
                 new ParallelRaceGroup(
-                        new FollowPath(TrajectoryFactory.farscoreToSpikeMark3, true),
+                        new FollowPath(TrajectoryFactory.farscoreToSpikeMark1, true),
                         routines.inSequence()
                 ),
                 new ParallelRaceGroup(
@@ -132,7 +132,7 @@ public class AutoRoutines {
                         intake.on
                 ),
                 new ParallelRaceGroup(
-                        new FollowPath(TrajectoryFactory.spikeMark3EndTofarscore, true),
+                        new FollowPath(TrajectoryFactory.spikeMark1EndTofarscore, true),
                         intake.keeping
                 ),
                 routines.fullOuttakeSequenceAuto(),

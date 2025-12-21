@@ -8,6 +8,7 @@ import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.hardware.impl.MotorEx;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -17,7 +18,7 @@ public class Outtake implements Subsystem {
     private Outtake() {}
 
     public static boolean shooting = false;
-    public static boolean spinup = false;  // NEW: Auto-spinup when tag visible
+    public static boolean spinup = false;
 
     public final MotorEx Tmotor = new MotorEx("Tmotor").reversed();
     public final MotorEx Bmotor = new MotorEx("Bmotor");
@@ -25,6 +26,13 @@ public class Outtake implements Subsystem {
     public CRServo spinServo1;
     public CRServo spinServo2;
     public Servo led;
+    public Servo led2;  // Second LED that mirrors the first
+
+    // Beam break sensor
+    private DigitalChannel beamBreak;
+    private long beamBrokenStartTime = 0;
+    private boolean beamCurrentlyBroken = false;
+    private static final long BEAM_BREAK_THRESHOLD_MS = 500;
 
     // LED flashing state
     private long lastFlashTime = 0;
@@ -50,9 +58,14 @@ public class Outtake implements Subsystem {
 
     public void initialize(HardwareMap hardwareMap) {
         led = hardwareMap.get(Servo.class, "led");
+        led2 = hardwareMap.get(Servo.class, "led2");
         spinServo1 = hardwareMap.get(CRServo.class, "spinServo1");
         spinServo2 = hardwareMap.get(CRServo.class, "spinServo2");
         gateServo = hardwareMap.get(Servo.class, "gateServo");
+
+        // Initialize beam break sensor
+        beamBreak = hardwareMap.get(DigitalChannel.class, "beamBreak");
+        beamBreak.setMode(DigitalChannel.Mode.INPUT);
 
         // Initialize PID controllers
         TmotorPID = new SimplePID();
@@ -68,12 +81,15 @@ public class Outtake implements Subsystem {
         spinServo1.setPower(0);
         spinServo2.setPower(0);
         led.setPosition(0.277);
+        led2.setPosition(0.277);
         shooting = false;
         spinup = false;
         lastFlashTime = 0;
         flashState = false;
         localTargetVel = 0.0;
         velocityLocked = false;
+        beamBrokenStartTime = 0;
+        beamCurrentlyBroken = false;
 
         if (TmotorPID != null) TmotorPID.reset();
         if (BmotorPID != null) BmotorPID.reset();
@@ -81,6 +97,9 @@ public class Outtake implements Subsystem {
 
     @Override
     public void periodic() {
+        // Check beam break sensor status
+        checkBeamBreak();
+
         // Update local target velocity with velocity locking
         if (shooting) {
             // Lock velocity at the start of shooting for consistency
@@ -90,7 +109,7 @@ public class Outtake implements Subsystem {
             }
             // Don't update localTargetVel again until shooting stops
         } else if (spinup) {
-            // NEW: Auto-spinup when tag is visible
+            // Auto-spinup when tag is visible
             velocityLocked = false;
             localTargetVel = targetVel; // Follow the calculated targetVel
         } else {
@@ -135,22 +154,81 @@ public class Outtake implements Subsystem {
         }
 
         // LED control based on state
+        updateLED();
+    }
+
+    /**
+     * Checks the beam break sensor and tracks how long it's been broken
+     */
+    private void checkBeamBreak() {
+        // Read sensor - typically LOW (false) when broken, HIGH (true) when intact
+        boolean beamIntact = beamBreak.getState();
+        boolean beamBroken = !beamIntact;
+
         long currentTime = System.currentTimeMillis();
 
-        if (shooting) {
-            led.setPosition(0.500); // GREEN - actively shooting
-        } else if (spinup && tagVisible) {
-            led.setPosition(0.611); // BLUE - spun up and ready
-        } else if (tagVisible) {
-            led.setPosition(0.611); // BLUE - tag visible but not spun up yet
+        if (beamBroken) {
+            if (!beamCurrentlyBroken) {
+                // Beam just broke
+                beamBrokenStartTime = currentTime;
+                beamCurrentlyBroken = true;
+            }
+            // Beam is still broken (duration checked in updateLED)
         } else {
+            // Beam is intact
+            beamCurrentlyBroken = false;
+            beamBrokenStartTime = 0;
+        }
+    }
+
+    /**
+     * Returns true if the beam has been broken for more than 500ms
+     */
+    public boolean isBeamBrokenLongEnough() {
+        if (!beamCurrentlyBroken) {
+            return false;
+        }
+        long duration = System.currentTimeMillis() - beamBrokenStartTime;
+        return duration >= BEAM_BREAK_THRESHOLD_MS;
+    }
+
+    /**
+     * Updates LED color based on robot state and beam break status
+     * Both LEDs always show the same color
+     */
+    private void updateLED() {
+        long currentTime = System.currentTimeMillis();
+        double ledPosition = 0.0;
+
+        // PRIORITY 1: Purple if beam broken for >500ms
+        if (isBeamBrokenLongEnough()) {
+            ledPosition = 0.833; // PURPLE - beam broken for >500ms
+        }
+        // PRIORITY 2: Green during shooting
+        else if (shooting) {
+            ledPosition = 0.500; // GREEN - actively shooting
+        }
+        // PRIORITY 3: Blue when spun up and ready
+        else if (spinup && tagVisible) {
+            ledPosition = 0.611; // BLUE - spun up and ready
+        }
+        // PRIORITY 4: Blue when tag visible
+        else if (tagVisible) {
+            ledPosition = 0.611; // BLUE - tag visible but not spun up yet
+        }
+        // PRIORITY 5: Flashing red when no tag
+        else {
             // FLASHING RED - no tag
             if (currentTime - lastFlashTime > FLASH_INTERVAL_MS) {
                 flashState = !flashState;
                 lastFlashTime = currentTime;
             }
-            led.setPosition(flashState ? 0.277 : 0.0);
+            ledPosition = flashState ? 0.277 : 0.0;
         }
+
+        // Set both LEDs to the same color
+        led.setPosition(ledPosition);
+        led2.setPosition(ledPosition);
     }
 
     // Public methods for telemetry/debugging
@@ -164,6 +242,17 @@ public class Outtake implements Subsystem {
 
     public double getLocalTargetVel() {
         return localTargetVel;
+    }
+
+    public boolean getBeamBreakState() {
+        return beamCurrentlyBroken;
+    }
+
+    public long getBeamBrokenDuration() {
+        if (!beamCurrentlyBroken) {
+            return 0;
+        }
+        return System.currentTimeMillis() - beamBrokenStartTime;
     }
 
     public Command open = new Command() {
