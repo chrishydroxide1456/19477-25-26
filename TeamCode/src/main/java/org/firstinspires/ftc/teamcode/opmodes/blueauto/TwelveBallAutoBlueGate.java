@@ -27,7 +27,7 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
     private List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     // Timing constants (tunable)
-    private static final long SHOOT_SEQUENCE_TIME = 2900;
+    private static final long SHOOT_SEQUENCE_TIME = 2000;
     private static final long INTAKE_START_DELAY = 3000;
     private static final long GATE_WAIT_TIME = 1250;  // Wait at gate before continuing
 
@@ -81,7 +81,7 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
 
         follower = PedroComponent.follower();
 
-        // Build BLUE alliance trajectories (sets LL.ID = 24)
+        // Build RED alliance trajectories (sets LL.ID = 20)
         TrajectoryFactory.buildTrajectories(follower, false);
         follower.setStartingPose(TrajectoryFactory.goalStartPos);
 
@@ -321,12 +321,12 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
         });
 
         // T+500ms: Open gate
-        scheduleAction(500, () -> {
+        scheduleAction(200, () -> {
             outtake.open.schedule();
         });
 
         // T+900ms: Start intake forward
-        scheduleAction(900, () -> {
+        scheduleAction(400, () -> {
             intake.autonshooting.schedule();
         });
 
