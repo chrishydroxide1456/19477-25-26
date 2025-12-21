@@ -140,10 +140,10 @@ public class Drive implements Subsystem {
         double FR =  turnPower;
         double BR = -turnPower;
 
-        FLmotor.setPower(FL);
-        FRmotor.setPower(FR);
-        BLmotor.setPower(BL);
-        BRmotor.setPower(BR);
+        FLmotor.setPower(0.8*FL);
+        FRmotor.setPower(0.8*FR);
+        BLmotor.setPower(0.8*BL);
+        BRmotor.setPower(0.8*BR);
     }
 
     public void autodrive(double rx) {

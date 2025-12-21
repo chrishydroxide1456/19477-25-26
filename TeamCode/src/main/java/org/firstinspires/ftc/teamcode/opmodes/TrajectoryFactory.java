@@ -13,7 +13,7 @@ public class TrajectoryFactory {
     // Poses - all positions on the field
     public static Pose goalStartPos = new Pose(26.0, 130.0, Math.toRadians(-40));
     public static Pose farStartPos = new Pose(56.0, 8.0, Math.toRadians(270));
-    public static Pose farParkPos = new Pose(36.0, 8.0, Math.toRadians(180));
+    public static Pose farParkPos = new Pose(36.0, 16.0, Math.toRadians(180));
     //public static Pose scorePos = new Pose(57, 88, Math.toRadians(-48.5));
     public static Pose scorePos = new Pose(60, 90, Math.toRadians(-49.5));
 
@@ -35,11 +35,11 @@ public class TrajectoryFactory {
 
     public static Pose outOfTheWayPos = new Pose(27.0, 70.0, Math.toRadians(180));
 
-    public static Pose farscorePos = new Pose(58.9, 20.1, Math.toRadians(115-180));
+    public static Pose farscorePos = new Pose(58.9, 20.1, Math.toRadians(120-180));
 
-    public static Pose HumanArtifacts = new Pose(13.5, 17.3, Math.toRadians(16+180));
+    public static Pose HumanArtifacts = new Pose(8.54, 23, Math.toRadians(270));
 
-    public static Pose HumanZone = new Pose(11.8, 12.3, Math.toRadians(16+180));
+    public static Pose HumanZone = new Pose(6, 8.54, Math.toRadians(270));
 
     // Path chains
     public static PathChain goalToScore;
