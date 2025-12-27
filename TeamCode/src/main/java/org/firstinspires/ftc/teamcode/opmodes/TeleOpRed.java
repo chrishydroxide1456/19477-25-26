@@ -42,12 +42,19 @@ public class TeleOpRed extends NextFTCOpMode {
                 BindingsComponent.INSTANCE
         );
 
-        // LEFT BUMPER = AUTO ALIGN
-        button(() -> gamepad1.left_bumper).whenBecomesTrue(() -> {
-            if (tagVisible) {
-                routines.autoAlignOnly().schedule();
-            }
-        });
+        //LEFT BUMPER = AUTOALIGN
+        button(() -> gamepad1.left_bumper)
+                .whenTrue(() -> {
+                    if (LL.tagVisible && Math.abs(headingAdjust) > 0.5) {  // Use LL.tagVisible directly
+                        drive.autoAlignActive = true;
+                        drive.previousError = 0.0;
+                        drive.integral = 0.0;
+                        drive.lastTime = System.currentTimeMillis();
+                    }
+                })
+                .whenFalse(() -> {
+                    drive.autoAlignActive = false;
+                });
 
         // RIGHT BUMPER = SHOOT SEQUENCE
         button(() -> gamepad1.right_bumper).whenBecomesTrue(() -> {

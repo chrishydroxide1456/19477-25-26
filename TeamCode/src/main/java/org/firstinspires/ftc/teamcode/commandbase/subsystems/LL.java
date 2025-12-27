@@ -80,7 +80,7 @@ public class LL implements Subsystem {
                 lastDetectionTime = currentTime;
 
                 // Horizontal aiming
-                headingAdjust = llresult.getTx();
+                headingAdjust = llresult.getTx() + 10.0; //tune this headingadjust
 
                 // Raw distance calculation
                 double ty = llresult.getTy();
@@ -103,8 +103,8 @@ public class LL implements Subsystem {
                 if (!Outtake.shooting) {
                     if (distance > 55.0) {
                         double calculatedVel = gettargetVel(distance);
-                        targetVel = (!Double.isNaN(calculatedVel + 3500.0) && !Double.isInfinite(calculatedVel))
-                                ? calculatedVel : 800.0; //tune later. also tune shot power later
+                        targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
+                                ? calculatedVel + 350.0 : 800.0; // + 800 rpm per 20.0 inches
                     } else {
                         double calculatedVel = gettargetVel(distance);
                         targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
@@ -173,7 +173,7 @@ public class LL implements Subsystem {
         double Vball = Math.sqrt(numerator / (2.0 * cosAngle * cosAngle * denom));
 
         // Account for energy loss (flywheel to ball efficiency)
-        double Vwheel = Vball / 0.72;
+        double Vwheel = Vball / 0.8;
 
         // Convert linear velocity (m/s) to RPM
         double rpm = (Vwheel / (2.0 * Math.PI * flywheelR)) * 60.0;

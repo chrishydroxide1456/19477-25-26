@@ -16,12 +16,12 @@ public class Drive implements Subsystem {
     public final MotorEx BLmotor = new MotorEx("BLmotor").floatMode().reversed();
     public final MotorEx BRmotor = new MotorEx("BRmotor").floatMode().reversed();
 
-    private boolean autoAlignActive = false;
+    public boolean autoAlignActive = false;
 
     // PID variables
-    private double previousError = 0.0;
-    private double integral = 0.0;
-    private long lastTime = 0;
+    public double previousError = 0.0;
+    public double integral = 0.0;
+    public long lastTime = 0;
 
     public void setMulti(double newMulti) {
         multi = newMulti;
@@ -77,9 +77,9 @@ public class Drive implements Subsystem {
         double error = headingAdjust;  // degrees from LL
 
         // TUNED PID CONSTANTS (reduced overshoot)
-        double kP = 0.045;              // Reduced from 0.055 (less aggressive = less overshoot)
-        double kI = 0.002;              // Small integral to eliminate steady-state error
-        double kD = 0.015;              // INCREASED from 0.008 (more damping = less overshoot)
+        double kP = 0.015;              // Reduced from 0.055 (less aggressive = less overshoot)
+        double kI = 0.001;              // Small integral to eliminate steady-state error
+        double kD = 0.025;              // INCREASED from 0.008 (more damping = less overshoot)
 
         double maxPower = 0.75;         // Reduced from 0.85 (prevent too much momentum)
         double minPower = 0.15;
@@ -111,10 +111,10 @@ public class Drive implements Subsystem {
             double adaptiveMaxPower = maxPower;
             if (Math.abs(error) < 3.0) {
                 // Within 3 degrees: reduce max power to prevent overshoot
-                adaptiveMaxPower = 0.45;
+                adaptiveMaxPower = 0.2;
             } else if (Math.abs(error) < 7.0) {
                 // Within 7 degrees: moderate power
-                adaptiveMaxPower = 0.60;
+                adaptiveMaxPower = 0.30;
             }
 
             // Clamp to adaptive max power
@@ -140,10 +140,10 @@ public class Drive implements Subsystem {
         double FR =  turnPower;
         double BR = -turnPower;
 
-        FLmotor.setPower(0.8*FL);
-        FRmotor.setPower(0.8*FR);
-        BLmotor.setPower(0.8*BL);
-        BRmotor.setPower(0.8*BR);
+        FLmotor.setPower(0.5*FL);
+        FRmotor.setPower(0.5*FR);
+        BLmotor.setPower(0.5*BL);
+        BRmotor.setPower(0.5*BR);
     }
 
     public void autodrive(double rx) {

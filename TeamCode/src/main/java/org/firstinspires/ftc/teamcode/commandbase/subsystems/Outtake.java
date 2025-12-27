@@ -145,7 +145,7 @@ public class Outtake implements Subsystem {
 
             // Apply power
             Tmotor.setPower(Tpower);
-            Bmotor.setPower(Bpower);
+            Bmotor.setPower(Bpower); //leave off here: if distance < certain amt then multiply by like 1.1
         } else {
             Tmotor.setPower(0);
             Bmotor.setPower(0);
