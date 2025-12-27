@@ -84,7 +84,7 @@ public class TeleOpRed extends NextFTCOpMode {
         }
 
         // Manual trigger-based turning for fine adjustments
-        double triggerTurn = (gamepad2.left_trigger - gamepad2.right_trigger) * 0.55;
+        double triggerTurn = (gamepad2.left_trigger - gamepad2.right_trigger) * 0.45;
 
         // Apply driving with trigger turning
         if (Math.abs(triggerTurn) > 0.05) {

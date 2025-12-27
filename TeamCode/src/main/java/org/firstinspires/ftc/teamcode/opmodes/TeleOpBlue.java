@@ -87,7 +87,7 @@ public class TeleOpBlue extends NextFTCOpMode {
             drive.setMulti(1.0);  // Normal speed
         }
         // Manual trigger-based turning for fine adjustments
-        double triggerTurn = (gamepad2.left_trigger - gamepad2.right_trigger) * 0.55;
+        double triggerTurn = (gamepad2.left_trigger - gamepad2.right_trigger) * 0.45;
 
         // Create modified gamepad with trigger turning added
         if (Math.abs(triggerTurn) > 0.05) {

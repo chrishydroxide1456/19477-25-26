@@ -31,9 +31,9 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
     private static final long INTAKE_START_DELAY = 400;
 
     // Shot velocities (tunable for each shot). tune later
-    private static final double SHOT_1_VELOCITY = 4800.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 4800.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 4800.0;  // After spike mark 2
+    private static final double SHOT_1_VELOCITY = 6000.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 6000.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 6000.0;  // After spike mark 2
 
     private enum AutoState {
         IDLE,
@@ -169,6 +169,8 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
                 // START SPINNING UP MOTORS IMMEDIATELY DURING DRIVE
                 Outtake.shooting = true;
                 LL.targetVel = SHOT_1_VELOCITY;
+                outtake.Tmotor.setPower(1.0);  // Direct power backup
+                outtake.Bmotor.setPower(1.0);
                 break;
 
             case SHOOT_1:
@@ -223,8 +225,12 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
                 // Set velocity based on which shot
                 if (newState == AutoState.DRIVE_BACK_TO_SCORE_2) {
                     LL.targetVel = SHOT_2_VELOCITY;
+                    outtake.Tmotor.setPower(1.0);  // Direct power backup
+                    outtake.Bmotor.setPower(1.0);
                 } else {
                     LL.targetVel = SHOT_3_VELOCITY;
+                    outtake.Tmotor.setPower(1.0);  // Direct power backup
+                    outtake.Bmotor.setPower(1.0);
                 }
 
                 // Start appropriate path
