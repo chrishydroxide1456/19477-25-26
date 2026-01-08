@@ -4,8 +4,11 @@ import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAd
 
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.hardware.impl.MotorEx;
+
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+@Configurable
 public class Drive implements Subsystem {
     public static final Drive INSTANCE = new Drive();
     public static double multi = 1.0;
@@ -22,6 +25,11 @@ public class Drive implements Subsystem {
     public double previousError = 0.0;
     public double integral = 0.0;
     public long lastTime = 0;
+
+    // TUNED PID CONSTANTS (reduced overshoot)
+    public static double kP = 0.042;              // Reduced from 0.055 (less aggressive = less overshoot)
+    public static double kI = 0.0005;              // Small integral to eliminate steady-state error
+    public static double kD = 0.000;              // INCREASED from 0.008 (more damping = less overshoot)
 
     public void setMulti(double newMulti) {
         multi = newMulti;
@@ -76,12 +84,7 @@ public class Drive implements Subsystem {
     private void autoAlignAggressive() {
         double error = headingAdjust;  // degrees from LL
 
-        // TUNED PID CONSTANTS (reduced overshoot)
-        double kP = 0.015;              // Reduced from 0.055 (less aggressive = less overshoot)
-        double kI = 0.001;              // Small integral to eliminate steady-state error
-        double kD = 0.025;              // INCREASED from 0.008 (more damping = less overshoot)
-
-        double maxPower = 0.75;         // Reduced from 0.85 (prevent too much momentum)
+        double maxPower = 0.40;         // Reduced from 0.85 (prevent too much momentum)
         double minPower = 0.15;
         double deadband = 0.5;          // Slightly wider deadband (was 0.3)
 
@@ -140,21 +143,10 @@ public class Drive implements Subsystem {
         double FR =  turnPower;
         double BR = -turnPower;
 
-        FLmotor.setPower(0.5*FL);
-        FRmotor.setPower(0.5*FR);
-        BLmotor.setPower(0.5*BL);
-        BRmotor.setPower(0.5*BR);
+        FLmotor.setPower(0.8*FL);
+        FRmotor.setPower(0.8*FR);
+        BLmotor.setPower(0.8*BL);
+        BRmotor.setPower(0.8*BR);
     }
 
-    public void autodrive(double rx) {
-        double FLpower = (-rx);
-        double BLpower = (rx);
-        double FRpower = (rx);
-        double BRpower = (-rx);
-
-        FLmotor.setPower(FLpower);
-        FRmotor.setPower(FRpower);
-        BLmotor.setPower(BLpower);
-        BRmotor.setPower(BRpower);
-    }
 }

@@ -40,17 +40,17 @@ public class Outtake implements Subsystem {
     private static final long FLASH_INTERVAL_MS = 250;
 
     // Gradual spindown control
-    private double localTargetVel = 0.0;
+    public static double localTargetVel = 0.0;
     private static final double SPINDOWN_RATE = 50.0;
 
     // Velocity locking for consistent shooting
     private boolean velocityLocked = false;
 
     // Configurable PID coefficients
-    public static double kP = 0.006;
-    public static double kI = 0.0002;
-    public static double kD = 0.00005;
-    public static double kF = 0.00035;
+    public static double kP = 0.195; //correcting towards target
+    public static double kI = 0.0000; //steady-state error
+    public static double kD = 0.012; //cushioning, prevent overshoot
+    public static double kF = 0.0085; //push towards target
 
     // Simple PID controllers
     private SimplePID TmotorPID;
@@ -111,7 +111,7 @@ public class Outtake implements Subsystem {
         } else if (spinup) {
             // Auto-spinup when tag is visible
             velocityLocked = false;
-            localTargetVel = targetVel; // Follow the calculated targetVel
+            localTargetVel = 600.0; // 100 rpm = prespinup rpm
         } else {
             // Not shooting and not spinning up = gradual spindown
             velocityLocked = false;
@@ -133,11 +133,11 @@ public class Outtake implements Subsystem {
             double Tpower = TmotorPID.calculate(TcurrentVel, localTargetVel, shooting);
             double Bpower = BmotorPID.calculate(BcurrentVel, localTargetVel, shooting);
 
-            // Add feed-forward compensation during active feeding
-            if (shooting && gateServo.getPosition() < 0.5) { // Gate is open
-                Tpower += 0.05; // Compensate for load
-                Bpower += 0.05;
-            }
+//            // Add feed-forward compensation during active feeding
+//            if (shooting && gateServo.getPosition() < 0.5) { // Gate is open
+//                Tpower += 0.05; // Compensate for load
+//                Bpower += 0.05;
+//            }
 
             // Clamp to [0, 1]
             Tpower = Math.max(0.0, Math.min(1.0, Tpower));

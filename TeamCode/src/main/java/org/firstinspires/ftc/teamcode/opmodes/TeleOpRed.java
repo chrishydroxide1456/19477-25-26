@@ -4,9 +4,8 @@ import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.*;
 import static dev.nextftc.bindings.Bindings.button;
 
 import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
-import com.qualcomm.robotcore.hardware.Gamepad;
+import static org.firstinspires.ftc.teamcode.opmodes.TeleOpSoloRed.prespinup;
 
-import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.components.*;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
@@ -59,16 +58,14 @@ public class TeleOpRed extends NextFTCOpMode {
         // RIGHT BUMPER = SHOOT SEQUENCE
         button(() -> gamepad1.right_bumper).whenBecomesTrue(() -> {
             if (tagVisible) {
-                overriding = false;
-                Outtake.shooting = false;
                 routines.testoutSequence().schedule();
             }
         });
 
         // Y = OVERRIDE MODE (manual 1200 RPM prespin)
-        button(() -> gamepad2.y).toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> overriding = true)
-                .whenBecomesFalse(() -> overriding = false);
+        button(() -> gamepad2.dpad_up).toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> prespinup = true)
+                .whenBecomesFalse(() -> prespinup = false);
 
         // A = INTAKE TOGGLE
         button(() -> gamepad2.a).toggleOnBecomesTrue()

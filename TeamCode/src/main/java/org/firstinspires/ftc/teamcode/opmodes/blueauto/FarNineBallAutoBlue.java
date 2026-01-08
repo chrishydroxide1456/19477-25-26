@@ -28,12 +28,12 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
 
     // Timing constants (tunable)
     private static final long SHOOT_SEQUENCE_TIME = 2900;
-    private static final long INTAKE_START_DELAY = 400;
+    private static final long INTAKE_START_DELAY = 800;
 
     // Shot velocities (tunable for each shot). tune later
-    private static final double SHOT_1_VELOCITY = 2800.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 2800.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 2800.0;  // After spike mark 2
+    private static final double SHOT_1_VELOCITY = 1175.0 + 25.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 1175.0 + 25.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 1175.0 + 25.0;  // After spike mark 2
 
     private enum AutoState {
         IDLE,
@@ -119,15 +119,15 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
                 if (!follower.isBusy()) changeState(AutoState.SHOOT_1);
                 break;
             case SHOOT_1:
-                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_HUMAN);
+                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_BACK_TO_SCORE_2);
                 break;
 
-            case DRIVE_TO_HUMAN:
-                if (!follower.isBusy()) changeState(AutoState.INTAKE_HUMAN);
-                break;
-            case INTAKE_HUMAN:
-                if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_2);
-                break;
+//            case DRIVE_TO_HUMAN:
+//                if (!follower.isBusy()) changeState(AutoState.INTAKE_HUMAN);
+//                break;
+//            case INTAKE_HUMAN:
+//                if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_2);
+//                break;
             case DRIVE_BACK_TO_SCORE_2:
                 if (!follower.isBusy()) changeState(AutoState.SHOOT_2);
                 break;
@@ -275,12 +275,12 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
         });
 
         // T+500ms: Open gate
-        scheduleAction(500, () -> {
+        scheduleAction(900, () -> {
             outtake.open.schedule();
         });
 
         // T+900ms: Start intake forward
-        scheduleAction(900, () -> {
+        scheduleAction(1700, () -> {
             intake.autonshooting.schedule();
         });
 

@@ -32,9 +32,9 @@ public class NineBallAutoBlue extends NextFTCOpMode {
     private static final long INTAKE_START_DELAY = 400;
 
     // Shot velocities (tunable for each shot)
-    private static final double SHOT_1_VELOCITY = 1450.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 1465.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 1475.0;  // After spike mark 2
+    private static final double SHOT_1_VELOCITY = 1170.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 1170.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 1170.0;  // After spike mark 2
 
     private enum AutoState {
         IDLE,

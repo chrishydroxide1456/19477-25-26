@@ -4,9 +4,6 @@ import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.*;
 import static dev.nextftc.bindings.Bindings.button;
 import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
 
-import com.qualcomm.robotcore.hardware.Gamepad;
-
-import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.components.*;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
@@ -15,13 +12,15 @@ import org.firstinspires.ftc.teamcode.commandbase.Routines;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
-public class TeleOpSolo extends NextFTCOpMode {
+public class TeleOpSoloRed extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
     private LL ll;
-    private Drive drive;
+    private Drive drive; //may remove later
     private Routines routines;
+
+    public static boolean prespinup = false;
 
     @Override
     public void onInit() {
@@ -65,10 +64,10 @@ public class TeleOpSolo extends NextFTCOpMode {
             }
         });
 
-        // Y = OVERRIDE MODE (manual 1200 RPM prespin)
-        button(() -> gamepad2.y).toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> overriding = true)
-                .whenBecomesFalse(() -> overriding = false);
+        // DPAD UP = TOGGLE PRESPINUP
+        button(() -> gamepad2.dpad_up).toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> prespinup = true)
+                .whenBecomesFalse(() -> prespinup = false);
 
         // A = INTAKE TOGGLE
         button(() -> gamepad2.a).toggleOnBecomesTrue()
@@ -120,6 +119,7 @@ public class TeleOpSolo extends NextFTCOpMode {
             telemetry.addLine("=== SHOOT SYSTEM ===");
             telemetry.addData("Distance", "%.1f in", distance);
             telemetry.addData("Calculated RPM", "%.0f", ll.gettargetVel(distance));
+            //telemetry.addData("LL local RPM", "%.Of", localTargetVel);
             telemetry.addData("LL Target RPM", "%.0f", targetVel);
             telemetry.addLine();
             telemetry.addData("Top Motor RPM", "%.0f", TmotorRPM);

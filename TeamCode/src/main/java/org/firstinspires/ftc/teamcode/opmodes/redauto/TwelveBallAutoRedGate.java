@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.redauto;
 
+import static org.firstinspires.ftc.teamcode.opmodes.TeleOpSoloRedPedro.telestartingPose;
+
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import dev.nextftc.core.components.SubsystemComponent;
@@ -32,10 +34,10 @@ public class TwelveBallAutoRedGate extends NextFTCOpMode {
     private static final long GATE_WAIT_TIME = 1250;  // Wait at gate before continuing
 
     // Shot velocities (tunable for each shot)
-    private static final double SHOT_1_VELOCITY = 1315.0 + 25.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 1365.0 + 25.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 1350.0 + 25.0;  // After spike mark 2
-    private static final double SHOT_4_VELOCITY = 1350.0 + 25.0;  // After spike mark 3
+    private static final double SHOT_1_VELOCITY = 1175.0 + 25.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 1175.0 + 25.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 1175.0 + 25.0;  // After spike mark 2
+    private static final double SHOT_4_VELOCITY = 1175.0 + 25.0;  // After spike mark 3
 
     private enum AutoState {
         IDLE,
@@ -393,5 +395,6 @@ public class TwelveBallAutoRedGate extends NextFTCOpMode {
         outtake.Bmotor.setPower(0);
         LL.targetVel = 0.0;
         Outtake.shooting = false;
+        telestartingPose = follower.getPose();
     }
 }

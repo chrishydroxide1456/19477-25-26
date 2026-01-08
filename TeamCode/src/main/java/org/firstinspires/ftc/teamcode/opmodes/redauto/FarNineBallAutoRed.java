@@ -28,12 +28,12 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
 
     // Timing constants (tunable)
     private static final long SHOOT_SEQUENCE_TIME = 2900;
-    private static final long INTAKE_START_DELAY = 400;
+    private static final long INTAKE_START_DELAY = 800;
 
     // Shot velocities (tunable for each shot). tune later
-    private static final double SHOT_1_VELOCITY = 6000.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 6000.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 6000.0;  // After spike mark 2
+    private static final double SHOT_1_VELOCITY = 1250.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 1250.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 1250.0;  // After spike mark 2
 
     private enum AutoState {
         IDLE,
@@ -81,7 +81,7 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
         TrajectoryFactory.buildTrajectories(follower, true);
         follower.setStartingPose(TrajectoryFactory.farStartPos.mirror());
 
-        telemetry.addLine("🔵 Far 9-Ball State Machine Ready");
+        telemetry.addLine("🔴 Far 9-Ball State Machine Ready");
         telemetry.addData("Target Tag ID", LL.ID);
         telemetry.update();
     }
@@ -119,34 +119,34 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
                 if (!follower.isBusy()) changeState(AutoState.SHOOT_1);
                 break;
             case SHOOT_1:
-                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_HUMAN);
-                break;
-
-            case DRIVE_TO_HUMAN:
-                if (!follower.isBusy()) changeState(AutoState.INTAKE_HUMAN);
-                break;
-            case INTAKE_HUMAN:
-                if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_2);
-                break;
-            case DRIVE_BACK_TO_SCORE_2:
-                if (!follower.isBusy()) changeState(AutoState.SHOOT_2);
-                break;
-            case SHOOT_2:
-                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_SPIKE_1);
-                break;
-
-            case DRIVE_TO_SPIKE_1:
-                if (!follower.isBusy()) changeState(AutoState.INTAKE_SPIKE_1);
-                break;
-            case INTAKE_SPIKE_1:
-                if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_3);
-                break;
-            case DRIVE_BACK_TO_SCORE_3:
-                if (!follower.isBusy()) changeState(AutoState.SHOOT_3);
-                break;
-            case SHOOT_3:
                 if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_PARK);
                 break;
+
+//            case DRIVE_TO_HUMAN:
+//                if (!follower.isBusy()) changeState(AutoState.INTAKE_HUMAN);
+//                break;
+//            case INTAKE_HUMAN:
+//                if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_2);
+//                break;
+//            case DRIVE_BACK_TO_SCORE_2:
+//                if (!follower.isBusy()) changeState(AutoState.SHOOT_2);
+//                break;
+//            case SHOOT_2:
+//                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_PARK);
+//                break;
+
+//            case DRIVE_TO_SPIKE_1:
+//                if (!follower.isBusy()) changeState(AutoState.INTAKE_SPIKE_1);
+//                break;
+//            case INTAKE_SPIKE_1:
+//                if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_3);
+//                break;
+//            case DRIVE_BACK_TO_SCORE_3:
+//                if (!follower.isBusy()) changeState(AutoState.SHOOT_3);
+//                break;
+//            case SHOOT_3:
+//                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_PARK);
+//                break;
 
             case DRIVE_TO_PARK:
                 if (!follower.isBusy()) changeState(AutoState.COMPLETE);
@@ -289,7 +289,7 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
         });
 
         // T+500ms: Open gate
-        scheduleAction(500, () -> {
+        scheduleAction(900, () -> {
             outtake.open.schedule();
         });
 

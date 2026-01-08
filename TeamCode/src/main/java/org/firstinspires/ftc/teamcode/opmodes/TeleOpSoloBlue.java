@@ -2,9 +2,13 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.*;
 import static dev.nextftc.bindings.Bindings.button;
+import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake.localTargetVel;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake.spinup;
 
-import static org.firstinspires.ftc.teamcode.opmodes.TeleOpSoloRed.prespinup;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
+import dev.nextftc.core.commands.utility.InstantCommand;
 import dev.nextftc.core.components.*;
 import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
@@ -13,13 +17,15 @@ import org.firstinspires.ftc.teamcode.commandbase.Routines;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
-public class TeleOpBlue extends NextFTCOpMode {
+public class TeleOpSoloBlue extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
     private LL ll;
     private Drive drive;
     private Routines routines;
+
+    public static boolean prespinup = false;
 
     @Override
     public void onInit() {
@@ -41,7 +47,7 @@ public class TeleOpBlue extends NextFTCOpMode {
         );
 
         //LEFT BUMPER = AUTOALIGN
-        button(() -> gamepad1.left_bumper)
+        button(() -> gamepad2.left_bumper)
                 .whenTrue(() -> {
                     if (LL.tagVisible && Math.abs(headingAdjust) > 0.5) {  // Use LL.tagVisible directly
                         drive.autoAlignActive = true;
@@ -54,26 +60,26 @@ public class TeleOpBlue extends NextFTCOpMode {
                     drive.autoAlignActive = false;
                 });
 
-        // DPAD DOWN = SHOOT SEQUENCE
-        button(() -> gamepad1.right_bumper).whenBecomesTrue(() -> {
+        // RIGHT BUMPER = SHOOT SEQUENCE
+        button(() -> gamepad2.right_bumper).whenBecomesTrue(() -> {
             if (tagVisible) {
+                overriding = false;
+                Outtake.shooting = false;
                 routines.testoutSequence().schedule();
             }
-//            else {
-//                gamepad2.rumble(100); // Haptic feedback for no target
-//            }
         });
 
-        // A = prep spin up
+        // DPAD UP = TOGGLE PRESPINUP
         button(() -> gamepad2.dpad_up).toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> prespinup = true)
-                .whenBecomesFalse(() -> prespinup = false);
+                .whenTrue(() -> prespinup = true)
+                .whenFalse(() -> prespinup = false);
 
-        // A = intake toggle
+        // A = INTAKE TOGGLE
         button(() -> gamepad2.a).toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> routines.inSequence().schedule())
                 .whenBecomesFalse(() -> routines.stopinSequence().schedule());
-        // A = intake toggle
+
+        // X = REVERSE INTAKE
         button(() -> gamepad2.x).toggleOnBecomesTrue()
                 .whenBecomesTrue(() -> intake.reverse.schedule())
                 .whenBecomesFalse(() -> routines.stopReverseSequence().schedule());
@@ -81,20 +87,21 @@ public class TeleOpBlue extends NextFTCOpMode {
 
     @Override
     public void onUpdate() {
-        if (gamepad1.right_trigger > 0.1) {
+        // Speed control
+        if (gamepad2.right_trigger > 0.1) {
             drive.setMulti(0.58); // Slow mode
         } else {
             drive.setMulti(1.0);  // Normal speed
         }
-        // Manual trigger-based turning for fine adjustments
-        double triggerTurn = (gamepad2.left_trigger - gamepad2.right_trigger) * 0.45;
 
-        // Create modified gamepad with trigger turning added
+        // Manual trigger-based turning for fine adjustments
+        double triggerTurn = (gamepad2.left_trigger - gamepad2.right_trigger) * 0.55;
+
+        // Apply driving with trigger turning
         if (Math.abs(triggerTurn) > 0.05) {
-            // Apply trigger turning by directly controlling motors
-            double y = -gamepad1.left_stick_y;
-            double x = -gamepad1.left_stick_x;
-            double rx = -gamepad1.right_stick_x + triggerTurn; // Add trigger turning
+            double y = -gamepad2.left_stick_y;
+            double x = -gamepad2.left_stick_x;
+            double rx = -gamepad2.right_stick_x + triggerTurn;
 
             double FLpower = (-y + x + rx) * Drive.multi;
             double BLpower = (y + x - rx) * Drive.multi;
@@ -106,42 +113,45 @@ public class TeleOpBlue extends NextFTCOpMode {
             Drive.INSTANCE.BLmotor.setPower(BLpower);
             Drive.INSTANCE.BRmotor.setPower(BRpower);
         } else {
-            // Normal driving
-            drive.driverdrive(gamepad1);
+            drive.driverdrive(gamepad2);
         }
 
-        // Get current motor RPMs
+        // Telemetry
         double TmotorRPM = outtake.Tmotor.getVelocity();
         double BmotorRPM = outtake.Bmotor.getVelocity();
 
         if (tagVisible) {
-            // Calculate what the RPM SHOULD be
-            double calculatedRPM = ll.gettargetVel(distance);
-
-//            if (!Outtake.spinup && !Outtake.shooting) {
-//                gamepad2.rumble(0.0, 1.0, Gamepad.RUMBLE_DURATION_CONTINUOUS);
-//            }
-
             telemetry.addLine("=== SHOOT SYSTEM ===");
             telemetry.addData("Distance", "%.1f in", distance);
-            telemetry.addData("Target RPM", "%.0f", targetVel);
+            telemetry.addData("Calculated RPM", "%.0f", ll.gettargetVel(distance));
+            //telemetry.addData("LL local RPM", "%.Of", localTargetVel);
+            telemetry.addData("LL Target RPM", "%.0f", targetVel);
+            telemetry.addLine();
             telemetry.addData("Top Motor RPM", "%.0f", TmotorRPM);
-            telemetry.addData("Bottom Motor RPM", "%.0f", BmotorRPM);
+            telemetry.addData("Top Motor Power", "%.3f", outtake.Tmotor.getPower());
             telemetry.addData("Top Error", "%.0f RPM", targetVel - TmotorRPM);
+            telemetry.addLine();
+            telemetry.addData("Bottom Motor RPM", "%.0f", BmotorRPM);
+            telemetry.addData("Bottom Motor Power", "%.3f", outtake.Bmotor.getPower());
             telemetry.addData("Bottom Error", "%.0f RPM", targetVel - BmotorRPM);
+            telemetry.addLine();
+            telemetry.addData("Override Mode", overriding);
+            telemetry.addData("prespinup mode", prespinup);
+            telemetry.addData("Shooting", Outtake.shooting);
             telemetry.addData("headingAdjust", "%.1f°", headingAdjust);
             telemetry.addData("AutoAlign", Drive.INSTANCE.isAutoAlignActive());
-            telemetry.addData("Shooting", Outtake.shooting);
         } else {
             telemetry.addLine("=== NO TARGET ===");
             telemetry.addData("Limelight", "No AprilTag visible");
-            telemetry.addLine("");
+            telemetry.addLine();
             telemetry.addLine("=== MOTOR STATUS ===");
             telemetry.addData("Top Motor RPM", "%.0f", TmotorRPM);
             telemetry.addData("Bottom Motor RPM", "%.0f", BmotorRPM);
         }
         telemetry.update();
 
+        // REMOVED: The duplicate override logic that was causing the race condition
+        // The LL subsystem now handles all targetVel setting in its periodic() method
     }
 
 }

@@ -146,7 +146,6 @@ public class Routines {
     }
 
     public Command testoutSequence() {
-        overriding = false;
 
         return new Command() {
             private long sequenceStart = 0;

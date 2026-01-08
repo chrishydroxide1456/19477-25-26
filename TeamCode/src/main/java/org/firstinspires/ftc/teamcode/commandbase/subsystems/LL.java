@@ -1,14 +1,18 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
+import static org.firstinspires.ftc.teamcode.opmodes.TeleOpSoloRed.prespinup;
 
-import dev.nextftc.core.commands.utility.InstantCommand;
+import static java.lang.Math.sqrt;
+
 import dev.nextftc.core.subsystems.Subsystem;
+
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+@Configurable
 public class LL implements Subsystem {
 
     public static final LL INSTANCE = new LL();
@@ -34,6 +38,9 @@ public class LL implements Subsystem {
     private long lastDetectionTime = 0;
     private static final long DETECTION_TIMEOUT_MS = 500;
 
+    public static double efficiency = 0.817;
+    public static double compensation = 650.0;
+
     public void initialize(HardwareMap hardwareMap) {
         headingAdjust = 0.0;
         distance = 36.0f;
@@ -52,9 +59,9 @@ public class LL implements Subsystem {
         adjust();
 
         // Auto-spinup logic: spin up flywheels when tag is visible (but not during shooting)
-        if (tagVisible && !Outtake.shooting) {
+        if (tagVisible && !Outtake.shooting && prespinup) {
             Outtake.spinup = true;
-        } else if (!tagVisible && !Outtake.shooting) {
+        } else if (!tagVisible && !Outtake.shooting || !prespinup) {
             Outtake.spinup = false;
         }
         // During shooting, the shooting sequence controls the spinup state
@@ -95,6 +102,10 @@ public class LL implements Subsystem {
                     }
                 }
 
+//                134, 138)
+//
+//                float rawDistance = sqrt(b2 + c2);
+
                 // Smooth distance
                 smoothedDistance = smoothDistance(rawDistance, smoothedDistance);
                 distance = smoothedDistance;
@@ -104,11 +115,11 @@ public class LL implements Subsystem {
                     if (distance > 55.0) {
                         double calculatedVel = gettargetVel(distance);
                         targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                                ? calculatedVel + 350.0 : 800.0; // + 800 rpm per 20.0 inches
+                                ? calculatedVel + compensation : 800.0; // + 550 rpm when far
                     } else {
                         double calculatedVel = gettargetVel(distance);
                         targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                                ? calculatedVel : 800.0;
+                                ? calculatedVel + 200 : 800.0;
                     }
                 }
 
@@ -144,7 +155,7 @@ public class LL implements Subsystem {
         }
     }
 
-    private float smoothDistance(float newDistance, float oldDistance) {
+    public float smoothDistance(float newDistance, float oldDistance) {
         return (float) (SMOOTHING_ALPHA * newDistance + (1.0 - SMOOTHING_ALPHA) * oldDistance);
     }
 
@@ -170,10 +181,10 @@ public class LL implements Subsystem {
 
         // Ballistic calculation
         double numerator = 9.8 * DistanceMeters * DistanceMeters;
-        double Vball = Math.sqrt(numerator / (2.0 * cosAngle * cosAngle * denom));
+        double Vball = sqrt(numerator / (2.0 * cosAngle * cosAngle * denom));
 
         // Account for energy loss (flywheel to ball efficiency)
-        double Vwheel = Vball / 0.8;
+        double Vwheel = Vball / efficiency;
 
         // Convert linear velocity (m/s) to RPM
         double rpm = (Vwheel / (2.0 * Math.PI * flywheelR)) * 60.0;

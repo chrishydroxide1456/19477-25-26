@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
+
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(14.0)
             .forwardZeroPowerAcceleration(-34.790656451320785)
@@ -40,6 +41,7 @@ public class Constants {
             .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .xVelocity(56.3066329)
             .yVelocity(38.216766357);
+            //.useBrakeModeInTeleOp(false); //true or false??
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .distanceUnit(DistanceUnit.INCH)
@@ -49,6 +51,7 @@ public class Constants {
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+    //run turn tuner to find yawscalar later
 
 
     public static PathConstraints pathConstraints = new PathConstraints(
