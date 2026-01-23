@@ -13,13 +13,12 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import java.util.*;
 
-@Autonomous(name = "🔴 12-Ball Auto Red (Gate Path)", group = "Red", preselectTeleOp = "TeleOpRed")
+@Autonomous(name = "🔴 12 Close (Gate)", group = "Red", preselectTeleOp = "TeleOpRed")
 public class TwelveBallAutoRedGate extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
     private LL ll;
-    private Drive drive;
     private Follower follower;
 
     private AutoState currentState = AutoState.IDLE;
@@ -67,10 +66,9 @@ public class TwelveBallAutoRedGate extends NextFTCOpMode {
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
         ll = LL.INSTANCE;
-        drive = Drive.INSTANCE;
 
         addComponents(
-                new SubsystemComponent(ll, drive, intake, outtake),
+                new SubsystemComponent(ll, intake, outtake),
                 BulkReadComponent.INSTANCE,
                 new PedroComponent(Constants::createFollower)
         );

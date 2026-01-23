@@ -48,11 +48,11 @@ public class TrajectoryFactory {
 
     public static Pose outOfTheWayPos = new Pose(27.0, 70.0, Math.toRadians(180));
 
-    public static Pose farscorePos = new Pose(58.9, 18.0, Math.toRadians(115.5-180));
+    public static Pose farscorePos = new Pose(58.9, 18.0, Math.toRadians(115.5-180.0));
 
-    public static Pose HumanArtifacts = new Pose(8.54, 23, Math.toRadians(270));
+    public static Pose HumanArtifacts = new Pose(13.5, 17.3, Math.toRadians(16.0-180.0));
 
-    public static Pose HumanZone = new Pose(6, 8.54, Math.toRadians(270));
+    public static Pose HumanZone = new Pose(11.7, 12.3, Math.toRadians(16.0-180.0));
 
     // Path chains
     public static PathChain goalToScore;

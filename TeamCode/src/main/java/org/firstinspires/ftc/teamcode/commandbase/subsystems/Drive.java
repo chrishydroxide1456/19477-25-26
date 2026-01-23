@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAdjust;
+import static org.firstinspires.ftc.teamcode.opmodes.TeleOpSoloRedPedro.turnPower;
 
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.hardware.impl.MotorEx;
@@ -54,7 +55,7 @@ public class Drive implements Subsystem {
 
     public void driverdrive(Gamepad gamepad) {
         if (autoAlignActive) {
-            autoAlignAggressive();
+            autoAlignAggressive(headingAdjust);
             return;
         }
 
@@ -81,10 +82,10 @@ public class Drive implements Subsystem {
     }
 
     // IMPROVED: Reduced overshoot with better damping
-    private void autoAlignAggressive() {
-        double error = headingAdjust;  // degrees from LL
+    public double autoAlignAggressive(double headingerror) {
+        double error = headingerror;  // degrees from LL
 
-        double maxPower = 0.40;         // Reduced from 0.85 (prevent too much momentum)
+        double maxPower = 0.80;         // Reduced from 0.85 (prevent too much momentum)
         double minPower = 0.15;
         double deadband = 0.5;          // Slightly wider deadband (was 0.3)
 
@@ -93,8 +94,6 @@ public class Drive implements Subsystem {
         double dt = (currentTime - lastTime) / 1000.0; // seconds
         if (dt > 0.1 || dt <= 0) dt = 0.02; // Cap dt and handle first call
         lastTime = currentTime;
-
-        double turnPower = 0.0;
 
         if (Math.abs(error) > deadband) {
             // PID calculation
@@ -117,7 +116,7 @@ public class Drive implements Subsystem {
                 adaptiveMaxPower = 0.2;
             } else if (Math.abs(error) < 7.0) {
                 // Within 7 degrees: moderate power
-                adaptiveMaxPower = 0.30;
+                adaptiveMaxPower = 0.3e0;
             }
 
             // Clamp to adaptive max power
@@ -136,17 +135,7 @@ public class Drive implements Subsystem {
             integral = 0.0;
             previousError = 0.0;
         }
-
-        // Apply turn power to motors
-        double FL = -turnPower;
-        double BL =  turnPower;
-        double FR =  turnPower;
-        double BR = -turnPower;
-
-        FLmotor.setPower(0.8*FL);
-        FRmotor.setPower(0.8*FR);
-        BLmotor.setPower(0.8*BL);
-        BRmotor.setPower(0.8*BR);
+        return turnPower;
     }
 
 }

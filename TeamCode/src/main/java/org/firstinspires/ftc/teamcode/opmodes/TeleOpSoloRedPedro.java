@@ -12,6 +12,7 @@ import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import dev.nextftc.extensions.pedro.PedroComponent;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -25,7 +26,7 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 import java.util.function.Supplier;
-
+@Configurable
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class TeleOpSoloRedPedro extends NextFTCOpMode {
 
@@ -38,7 +39,7 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
 
     public Follower follower;
     //public static Pose telestartingPose; //set later, see auto ex
-    public static Pose telestartingPose = new Pose(104.0, 112.0, Math.toRadians(180));
+    public static Pose telestartingPose = new Pose(104.0, 112.0, Math.toRadians(0));
     private boolean automatedDrive = false;
 
     private boolean autoaim = false;
@@ -47,7 +48,7 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
     private static double headingError;
     private Supplier<PathChain> pathChain;
     private double multi = 0.8; //tune later
-    public static double turnPower = 0.7;
+    public static double turnPower;
 
     private static final double SMOOTHING_ALPHA = 0.5;
     private float smoothedDistance;
@@ -89,13 +90,16 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
                     builder
                             .addPath(new Path(new BezierLine(follower::getPose, new Pose(128.5, 66))))
                             .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(90), 0.8))
-                            .setVelocityConstraint(5.0); //finish rotating at 80% thru path
+                            .setVelocityConstraint(5.0)
+                            .setBrakingStart(0.65); //finish rotating at 80% thru path
                     break;
 
                 case gateintakePose:
                     builder
-                            .addPath(new Path(new BezierLine(follower::getPose, new Pose(133, 61))))
-                            .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(51), 0.6));
+                            .addPath(new Path(new BezierLine(follower::getPose, new Pose(133, 60.5))))
+                            .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(52), 0.6))
+                            .setVelocityConstraint(5.0)
+                            .setBrakingStart(0.65);
                     break;
 
             }
@@ -174,7 +178,7 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
 
         smoothedDistance = smoothDistance(rawDistance, smoothedDistance);
         distance = smoothedDistance;
-        
+
         if (!Outtake.shooting) {
             if (distance > 55.0) {
                 double calculatedVel = gettargetVel(distance);
@@ -191,11 +195,12 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
             if (autoaim) {
                 targetHeading = Math.atan2(138.0 - pose.getY(), 134.0 - pose.getX());
                 headingError = angleWrap(targetHeading - pose.getHeading());
+                drive.autoAlignAggressive(headingError);
 
                 follower.setTeleOpDrive(
                         -gamepad2.left_stick_y * multi,
                         -gamepad2.left_stick_x * multi,
-                        turnPower * headingError,
+                        -1.4 * turnPower, //this is fkin cooked rn, it's so slow and it oscillates also there's like a deadband if we're around 180 degrees off
                         true
                 );
             } else {
@@ -273,7 +278,7 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
     }
 
     private double angleWrap(double radians) {
-        return ((radians + Math.PI) % (2.0 * Math.PI)) - Math.PI;
+        return ((radians + Math.PI) % (2.0 * Math.PI)) - Math.PI; //check this later (-pi + 180 degrees)
     }
 
     private double gettargetVel(double Distance) {
