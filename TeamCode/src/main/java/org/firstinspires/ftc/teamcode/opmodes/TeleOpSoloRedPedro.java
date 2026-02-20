@@ -136,11 +136,11 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
 
         // RIGHT BUMPER = SHOOT SEQUENCE
         button(() -> gamepad2.right_bumper).whenBecomesTrue(() -> {
-            if (tagVisible) {
+//            if (tagVisible) {
                 overriding = false;
                 Outtake.shooting = false;
                 routines.testoutSequence().schedule();
-            }
+//            }
         });
 
         // DPAD UP = TOGGLE PRESPINUP
