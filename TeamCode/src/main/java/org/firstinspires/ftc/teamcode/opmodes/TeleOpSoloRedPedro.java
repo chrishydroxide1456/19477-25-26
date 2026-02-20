@@ -195,13 +195,14 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
             if (autoaim) {
                 targetHeading = Math.atan2(138.0 - pose.getY(), 134.0 - pose.getX());
                 headingError = angleWrap(targetHeading - pose.getHeading());
-                drive.autoAlignAggressive(headingError);
+                //drive.autoAlignAggressive(headingError);
 
                 follower.setTeleOpDrive(
                         -gamepad2.left_stick_y * multi,
                         -gamepad2.left_stick_x * multi,
-                        -1.4 * turnPower, //this is fkin cooked rn, it's so slow and it oscillates also there's like a deadband if we're around 180 degrees off
+                        -0.8 * headingError, //this is fkin cooked rn, it's so slow and it oscillates also there's like a deadband if we're around 180 degrees off
                         true
+                        
                 );
             } else {
                 follower.setTeleOpDrive(
@@ -277,9 +278,9 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
         // The LL subsystem now handles all targetVel setting in its periodic() method
     }
 
-    private double angleWrap(double radians) {
-        return ((radians + Math.PI) % (2.0 * Math.PI)) - Math.PI; //check this later (-pi + 180 degrees)
-    }
+//    private double angleWrap(double radians) {
+//        return ((radians + Math.PI) % (2.0 * Math.PI)) - Math.PI; //check this later (-pi + 180 degrees)
+//    }
 
     private double gettargetVel(double Distance) {
         // Convert everything to meters
@@ -316,6 +317,12 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
 
     public float smoothDistance(float newDistance, float oldDistance) {
         return (float) (SMOOTHING_ALPHA * newDistance + (1.0 - SMOOTHING_ALPHA) * oldDistance);
+    }
+
+    private double angleWrap(double angle) {
+        while (angle > Math.PI) angle -= 2.0 * Math.PI;
+        while (angle < -Math.PI) angle += 2.0 * Math.PI;
+        return angle;
     }
 
 }
