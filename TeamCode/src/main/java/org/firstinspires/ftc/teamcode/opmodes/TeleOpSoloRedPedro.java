@@ -5,7 +5,7 @@ import static dev.nextftc.bindings.Bindings.button;
 import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
 
 import static java.lang.Math.sqrt;
-
+//asdf lmao
 import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.components.*;
 import dev.nextftc.ftc.NextFTCOpMode;
