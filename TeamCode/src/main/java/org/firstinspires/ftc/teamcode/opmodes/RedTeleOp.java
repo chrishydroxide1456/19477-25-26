@@ -95,10 +95,11 @@ public class RedTeleOp extends NextFTCOpMode {
                 case gatePose:
                     builder
                             //.addPath(new Path(new BezierLine(follower::getPose, new Pose(128.5, 66))))
-                            .addPath(new Path (new BezierCurve(follower::getPose, new Pose(101.84, 76.32), new Pose (125, 66))))
-                            .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(0), 0.8))
+                            .addPath(new Path (new BezierCurve(follower::getPose, new Pose(101.84, 76.32), new Pose (120.0, 65.0))))
+                            .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(0.0), 0.8)) //finish rotating at 80% thru path
                             .setVelocityConstraint(5.0)
-                            .setBrakingStart(0.65); //finish rotating at 80% thru path
+                            .setBrakingStrength(1.0)
+                            .setBrakingStart(0.75);
                     break;
 
                 case gateintakePose:
@@ -106,7 +107,8 @@ public class RedTeleOp extends NextFTCOpMode {
                             .addPath(new Path(new BezierLine(follower::getPose, new Pose(133, 60.5))))
                             .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(52-180), 0.6))
                             .setVelocityConstraint(5.0)
-                            .setBrakingStart(0.65);
+                            .setBrakingStrength(1.0)
+                            .setBrakingStart(0.75);
                     break;
 
             }
@@ -184,7 +186,7 @@ public class RedTeleOp extends NextFTCOpMode {
         Pose pose = follower.getPose();
 
         float rawDistance = 36.0f;
-        double distInches = sqrt(Math.pow((135.0-pose.getY()), 2.0) + Math.pow((133.0-pose.getX()), 2.0));
+        double distInches = sqrt(Math.pow((138.0-pose.getY()), 2.0) + Math.pow((132.0-pose.getX()), 2.0));
         if (!Double.isNaN(distInches) && !Double.isInfinite(distInches) && distInches > 0) {
             rawDistance = (float) Math.max(12.0, Math.min(120.0, distInches));
         }
@@ -193,20 +195,20 @@ public class RedTeleOp extends NextFTCOpMode {
         distance = smoothedDistance;
 
 //        if (!Outtake.shooting) {
-        if (distance > 55.0) {
+        if (distance > 105.0) {
             double calculatedVel = gettargetVel(distance);
             targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                    ? 0.7 * calculatedVel + compensation : 800.0; // + 550 rpm when far
+                    ? 0.65 * calculatedVel + compensation : 800.0; // + 550 rpm when far
         } else {
             double calculatedVel = gettargetVel(distance);
             targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                    ? 0.7 * calculatedVel + 200 : 800.0;
+                    ? 0.65 * calculatedVel + 250 : 800.0;
         }
 //        }
 
         if (!automatedDrive) {
             if (autoaim) {
-                targetHeading = Math.atan2(135.0 - pose.getY(), 133.0 - pose.getX()) + Math.PI;
+                targetHeading = Math.atan2(138.0 - pose.getY(), 132.0 - pose.getX()) + Math.PI;
 //                rawError = angleWrap();
                 headingError = angleWrap(targetHeading - pose.getHeading());
                 //drive.autoAlignAggressive(headingError);

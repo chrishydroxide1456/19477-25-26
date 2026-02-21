@@ -48,11 +48,10 @@ public class Outtake implements Subsystem {
     private boolean velocityLocked = false;
 
     // Configurable PID coefficients
-    private static double kP = 0.195; //correcting towards target
+    private static double kP = 0.3; //correcting towards target
     private static double kI = 0.0000; //steady-state error
     private static double kD = 0.012; //cushioning, prevent overshoot
-//    public static double kF = 0.0085; //push towards target
-    private static double kF = 0.8;
+    private static double kF = 0.06;
 
     // Simple PID controllers
     private SimplePID TmotorPID;

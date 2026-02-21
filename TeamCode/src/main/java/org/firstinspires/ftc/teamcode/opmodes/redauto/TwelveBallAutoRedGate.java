@@ -28,7 +28,7 @@ public class TwelveBallAutoRedGate extends NextFTCOpMode {
     private List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     // Timing constants (tunable)
-    private static final long SHOOT_SEQUENCE_TIME = 2000;
+    private static final long SHOOT_SEQUENCE_TIME = 1100;
     private static final long INTAKE_START_DELAY = 3000;
     private static final long GATE_WAIT_TIME = 1250;  // Wait at gate before continuing
 
@@ -306,27 +306,28 @@ public class TwelveBallAutoRedGate extends NextFTCOpMode {
      * Matches the timing from Routines.java
      */
     private void executeShootSequence() {
+
+        // T+500ms: Open gate
+        scheduleAction(10, () -> {
+            outtake.open.schedule();
+        });
+
         // T+0ms: Reverse intake and spin servos backward
-        scheduleAction(0, () -> {
+        scheduleAction(50, () -> {
             intake.revmoving.schedule();
             outtake.spinServo1.setPower(-1.0);
             outtake.spinServo2.setPower(-1.0);
         });
 
         // T+210ms: Stop intake and spin servos (210ms of reversing)
-        scheduleAction(185, () -> {
+        scheduleAction(250, () -> {
             intake.off.schedule();
             outtake.spinServo1.setPower(0);
             outtake.spinServo2.setPower(0);
         });
 
-        // T+500ms: Open gate
-        scheduleAction(200, () -> {
-            outtake.open.schedule();
-        });
-
         // T+900ms: Start intake forward
-        scheduleAction(400, () -> {
+        scheduleAction(260, () -> {
             intake.autonshooting.schedule();
         });
 

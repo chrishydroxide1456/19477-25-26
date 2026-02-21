@@ -38,8 +38,8 @@ public class LL implements Subsystem {
     private long lastDetectionTime = 0;
     private static final long DETECTION_TIMEOUT_MS = 500;
 
-    public static double efficiency = 0.817;
-    public static double compensation = 250.0;
+    public static double efficiency = 0.856;
+    public static double compensation = 1050.0;
 
     public void initialize(HardwareMap hardwareMap) {
         headingAdjust = 0.0;
