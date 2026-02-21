@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.*;
 import static dev.nextftc.bindings.Bindings.button;
 import static org.firstinspires.ftc.teamcode.commandbase.Routines.overriding;
+import static org.firstinspires.ftc.teamcode.commandbase.subsystems.Outtake.shooting;
 
 import static java.lang.Math.sqrt;
 //asdf lmao
@@ -14,6 +15,7 @@ import dev.nextftc.extensions.pedro.PedroComponent;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
@@ -28,7 +30,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
 import java.util.function.Supplier;
 @Configurable
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp
-public class TeleOpSoloRedPedro extends NextFTCOpMode {
+public class BlueTeleOp extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
@@ -39,13 +41,14 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
 
     public Follower follower;
     //public static Pose telestartingPose; //set later, see auto ex
-    public static Pose telestartingPose = new Pose(104.0, 112.0, Math.toRadians(0));
+    public static Pose telestartingPose = new Pose(40.0, 112.0, Math.toRadians(180.0));
     private boolean automatedDrive = false;
 
     private boolean autoaim = false;
 
     private static double targetHeading;
     private static double headingError;
+    private static double rawError;
     private Supplier<PathChain> pathChain;
     private double multi = 0.8; //tune later
     public static double turnPower;
@@ -60,6 +63,12 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
     private endPose endpose;
 
     public static boolean prespinup = false;
+
+    private static double kP = 0.75;
+    private static double kD = 0.05;
+
+    private double lasttime = 0.0;
+    private double preverror = 0.0;
 
     @Override
     public void onInit() {
@@ -88,15 +97,16 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
             switch (endpose) {
                 case gatePose:
                     builder
-                            .addPath(new Path(new BezierLine(follower::getPose, new Pose(128.5, 66))))
-                            .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(90), 0.8))
+                            .addPath(new Path(new BezierLine(follower::getPose, new Pose(20.5, 66))))
+                            .addPath(new Path (new BezierCurve(follower::getPose, new Pose(39.2, 76.32), new Pose (20.5, 66))))
+                            .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(180), 0.8))
                             .setVelocityConstraint(5.0)
                             .setBrakingStart(0.65); //finish rotating at 80% thru path
                     break;
 
                 case gateintakePose:
                     builder
-                            .addPath(new Path(new BezierLine(follower::getPose, new Pose(133, 60.5))))
+                            .addPath(new Path(new BezierLine(follower::getPose, new Pose(11.5, 60.5))))
                             .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(52), 0.6))
                             .setVelocityConstraint(5.0)
                             .setBrakingStart(0.65);
@@ -136,17 +146,23 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
 
         // RIGHT BUMPER = SHOOT SEQUENCE
         button(() -> gamepad2.right_bumper).whenBecomesTrue(() -> {
-//            if (tagVisible) {
-                overriding = false;
-                Outtake.shooting = false;
-                routines.testoutSequence().schedule();
-//            }
+            routines.testoutSequence().schedule();
         });
 
-        // DPAD UP = TOGGLE PRESPINUP
-        button(() -> gamepad2.dpad_up).toggleOnBecomesTrue()
-                .whenBecomesTrue(() -> prespinup = true)
-                .whenBecomesFalse(() -> prespinup = false);
+        // Y = PRESPIN
+        button(() -> gamepad2.y).toggleOnBecomesTrue()
+                .whenBecomesTrue(() -> shooting = true)
+                .whenBecomesFalse(() -> shooting = false);
+
+//        // DPAD UP = TOGGLE PRESPINUP
+//        button(() -> gamepad2.dpad_up).toggleOnBecomesTrue()
+//                .whenBecomesTrue(() -> prespinup = true)
+//                .whenBecomesFalse(() -> prespinup = false);
+
+        //DPAD UP = RELOCALIZE
+        button(() -> gamepad2.dpad_up).whenBecomesTrue(() -> {
+            follower.setPose(new Pose(8.0, 8.0, 90)); //with intake facing the wall
+        });
 
         // A = INTAKE TOGGLE
         button(() -> gamepad2.a).toggleOnBecomesTrue()
@@ -171,7 +187,7 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
         Pose pose = follower.getPose();
 
         float rawDistance = 36.0f;
-        double distInches = sqrt(Math.pow((138.0-pose.getY()), 2.0) + Math.pow((134.0-pose.getX()), 2.0));
+        double distInches = sqrt(Math.pow((137.0-pose.getY()), 2.0) + Math.pow((12.0-pose.getX()), 2.0));
         if (!Double.isNaN(distInches) && !Double.isInfinite(distInches) && distInches > 0) {
             rawDistance = (float) Math.max(12.0, Math.min(120.0, distInches));
         }
@@ -179,30 +195,39 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
         smoothedDistance = smoothDistance(rawDistance, smoothedDistance);
         distance = smoothedDistance;
 
-        if (!Outtake.shooting) {
-            if (distance > 55.0) {
-                double calculatedVel = gettargetVel(distance);
-                targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                        ? calculatedVel + compensation : 800.0; // + 550 rpm when far
-            } else {
-                double calculatedVel = gettargetVel(distance);
-                targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                        ? calculatedVel + 200 : 800.0;
-            }
+//        if (!Outtake.shooting) {
+        if (distance > 55.0) {
+            double calculatedVel = gettargetVel(distance);
+            targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
+                    ? calculatedVel + compensation : 800.0; // + 550 rpm when far
+        } else {
+            double calculatedVel = gettargetVel(distance);
+            targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
+                    ? calculatedVel + 200 : 800.0;
         }
+//        }
 
         if (!automatedDrive) {
             if (autoaim) {
-                targetHeading = Math.atan2(138.0 - pose.getY(), 134.0 - pose.getX());
+                targetHeading = Math.atan2(137.0 - pose.getY(), 12.0 - pose.getX()) + Math.PI;
+//                rawError = angleWrap();
                 headingError = angleWrap(targetHeading - pose.getHeading());
                 //drive.autoAlignAggressive(headingError);
+                double dt = System.currentTimeMillis() / 1000.0 - lasttime;
+                if (dt > 0.01) {
+                    double derivative = (headingError - preverror) / dt;
+                    turnPower = kP * headingError + kD * derivative;
+                    turnPower = Math.max(-1.0, Math.min(1.0, turnPower));
+                    preverror = headingError;
+                    lasttime = System.currentTimeMillis() / 1000.0;
+                }
 
                 follower.setTeleOpDrive(
                         -gamepad2.left_stick_y * multi,
                         -gamepad2.left_stick_x * multi,
-                        -0.8 * headingError, //this is fkin cooked rn, it's so slow and it oscillates also there's like a deadband if we're around 180 degrees off
+                        turnPower,
                         true
-                        
+
                 );
             } else {
                 follower.setTeleOpDrive(
@@ -241,37 +266,30 @@ public class TeleOpSoloRedPedro extends NextFTCOpMode {
         // Telemetry
         double TmotorRPM = outtake.Tmotor.getVelocity();
         double BmotorRPM = outtake.Bmotor.getVelocity();
+        double currentheading = follower.getHeading();
+        double currentX = follower.getPose().getX();
+        double currentY = follower.getPose().getY();
 
+        telemetry.addLine("=== SHOOT SYSTEM ===");
+        telemetry.addData("Distance", "%.1f in", distance);
+        telemetry.addData("Calculated RPM", "%.0f", targetVel);
+        telemetry.addData("local targetvel", "%.0f", Outtake.localTargetVel);
+        telemetry.addData("Shooting", Outtake.shooting);
+        telemetry.addData("Top Motor RPM", "%.0f", TmotorRPM);
+        telemetry.addData("Top Motor Power", "%.3f", outtake.Tmotor.getPower());
+        telemetry.addData("Top Error", "%.0f RPM", targetVel - TmotorRPM);
+        telemetry.addData("Bottom Motor RPM", "%.0f", BmotorRPM);
+        telemetry.addData("Bottom Motor Power", "%.3f", outtake.Bmotor.getPower());
+        telemetry.addData("Bottom Error", "%.0f RPM", targetVel - BmotorRPM);
 
+        telemetry.addLine("=== AUTOAIM ===");
+        telemetry.addData("heading", "%.2f", currentheading);
+        telemetry.addData("Error°", "%.1f", Math.toDegrees(headingError));
+        telemetry.addData("turnPower", "%.2f", turnPower);
+        telemetry.addData("autoaim", autoaim);
+        telemetry.addData("currentX", currentX);
+        telemetry.addData("currentY", currentY);
 
-
-        if (tagVisible) {
-            telemetry.addLine("=== SHOOT SYSTEM ===");
-            telemetry.addData("Distance", "%.1f in", distance);
-            telemetry.addData("Calculated RPM", "%.0f", ll.gettargetVel(distance));
-            //telemetry.addData("LL local RPM", "%.Of", localTargetVel);
-            telemetry.addData("LL Target RPM", "%.0f", targetVel);
-            telemetry.addLine();
-            telemetry.addData("Top Motor RPM", "%.0f", TmotorRPM);
-            telemetry.addData("Top Motor Power", "%.3f", outtake.Tmotor.getPower());
-            telemetry.addData("Top Error", "%.0f RPM", targetVel - TmotorRPM);
-            telemetry.addLine();
-            telemetry.addData("Bottom Motor RPM", "%.0f", BmotorRPM);
-            telemetry.addData("Bottom Motor Power", "%.3f", outtake.Bmotor.getPower());
-            telemetry.addData("Bottom Error", "%.0f RPM", targetVel - BmotorRPM);
-            telemetry.addLine();
-            telemetry.addData("Override Mode", overriding);
-            telemetry.addData("Shooting", Outtake.shooting);
-            telemetry.addData("headingAdjust", "%.1f°", headingAdjust);
-            telemetry.addData("AutoAlign", Drive.INSTANCE.isAutoAlignActive());
-        } else {
-            telemetry.addLine("=== NO TARGET ===");
-            telemetry.addData("Limelight", "No AprilTag visible");
-            telemetry.addLine();
-            telemetry.addLine("=== MOTOR STATUS ===");
-            telemetry.addData("Top Motor RPM", "%.0f", TmotorRPM);
-            telemetry.addData("Bottom Motor RPM", "%.0f", BmotorRPM);
-        }
         telemetry.update();
 
         // REMOVED: The duplicate override logic that was causing the race condition

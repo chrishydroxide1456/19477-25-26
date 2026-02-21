@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.commandbase;
 
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
 import dev.nextftc.core.commands.Command;
-import dev.nextftc.core.commands.groups.*;
 
 public class Routines {
     private final Intake intake;
@@ -14,11 +13,11 @@ public class Routines {
     public static boolean outtaking = false;
 
     // Timing constants
-    private static final long INTAKE_REVERSE_START_MS = 1300-800;
-    private static final long INTAKE_STOP_MS = 1500-800;          // NEW: Stop 150ms after reversing starts
-    private static final long GATE_OPEN_MS = 1300-800;
-    private static final long INTAKE_FORWARD_START_MS = 1700-800;  // 250ms pause (1700 - 1450 = 250ms)
-    private static final long SEQUENCE_DURATION_MS = 3250-800;
+    private static final long INTAKE_REVERSE_START_MS = 50;
+//    private static final long INTAKE_STOP_MS = 250;          // NEW: Stop 150ms after reversing starts
+    private static final long GATE_OPEN_MS = 10;
+    private static final long INTAKE_FORWARD_START_MS = 250;  // 250ms pause (1700 - 1450 = 250ms)
+    private static final long SEQUENCE_DURATION_MS = 950;
     private static final double HEADING_TOLERANCE = 0.7;
     private static final long ALIGN_TIMEOUT_MS = 3000;
 
@@ -96,13 +95,13 @@ public class Routines {
                     intakeReversed = true;
                 }
 
-                // Stop everything at 1450ms (150ms of reversing)
-                if (elapsed > INTAKE_STOP_MS && !intakeStopped) {
-                    Intake.INSTANCE.off.schedule();
-                    outtake.spinServo1.setPower(0);
-                    outtake.spinServo2.setPower(0);
-                    intakeStopped = true;
-                }
+//                // Stop everything at 1450ms (150ms of reversing)
+//                if (elapsed > INTAKE_STOP_MS && !intakeStopped) {
+//                    Intake.INSTANCE.off.schedule();
+//                    outtake.spinServo1.setPower(0);
+//                    outtake.spinServo2.setPower(0);
+//                    intakeStopped = true;
+//                }
 
                 // Open gate at 1300ms
                 if (elapsed > GATE_OPEN_MS && !gateOpened) {
@@ -161,8 +160,8 @@ public class Routines {
 //                }
 
                 // Stop spin servos immediately
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
+                outtake.spinServo1.setPower(-1.0);
+                outtake.spinServo2.setPower(-1.0);
 
                 Outtake.shooting = true;
                 sequenceStart = System.currentTimeMillis();
@@ -174,6 +173,7 @@ public class Routines {
 
             @Override
             public void update() {
+
                 long elapsed = System.currentTimeMillis() - sequenceStart;
 
                 // Reverse intake at 1300ms AND spin servos backward
@@ -184,13 +184,13 @@ public class Routines {
                     intakeReversed = true;
                 }
 
-                // NEW: Stop everything at 1450ms (150ms of reversing)
-                if (elapsed > INTAKE_STOP_MS && !intakeStopped) {
-                    Intake.INSTANCE.off.schedule();
-                    outtake.spinServo1.setPower(0);
-                    outtake.spinServo2.setPower(0);
-                    intakeStopped = true;
-                }
+//                // NEW: Stop everything at 1450ms (150ms of reversing)
+//                if (elapsed > INTAKE_STOP_MS && !intakeStopped) {
+//                    Intake.INSTANCE.off.schedule();
+//                    outtake.spinServo1.setPower(0);
+//                    outtake.spinServo2.setPower(0);
+//                    intakeStopped = true;
+//                }
 
                 // Open gate at 1300ms
                 if (elapsed > GATE_OPEN_MS && !gateOpened) {

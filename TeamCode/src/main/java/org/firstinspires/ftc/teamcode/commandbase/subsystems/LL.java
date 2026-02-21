@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-import static org.firstinspires.ftc.teamcode.opmodes.TeleOpSoloRed.prespinup;
+import static org.firstinspires.ftc.teamcode.opmodes.RedTeleOp.prespinup;
 
 import static java.lang.Math.sqrt;
 
@@ -39,7 +39,7 @@ public class LL implements Subsystem {
     private static final long DETECTION_TIMEOUT_MS = 500;
 
     public static double efficiency = 0.817;
-    public static double compensation = 650.0;
+    public static double compensation = 250.0;
 
     public void initialize(HardwareMap hardwareMap) {
         headingAdjust = 0.0;

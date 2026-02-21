@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
 import static org.firstinspires.ftc.teamcode.commandbase.subsystems.LL.headingAdjust;
-import static org.firstinspires.ftc.teamcode.opmodes.TeleOpSoloRedPedro.turnPower;
+import static org.firstinspires.ftc.teamcode.opmodes.RedTeleOp.turnPower;
 
 import dev.nextftc.core.subsystems.Subsystem;
 import dev.nextftc.hardware.impl.MotorEx;

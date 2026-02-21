@@ -22,7 +22,8 @@ public class Outtake implements Subsystem {
 
     public final MotorEx Tmotor = new MotorEx("Tmotor").reversed();
     public final MotorEx Bmotor = new MotorEx("Bmotor");
-    private Servo gateServo;
+    private Servo gateServo1;
+    private Servo gateServo2;
     public CRServo spinServo1;
     public CRServo spinServo2;
     public Servo led;
@@ -47,10 +48,11 @@ public class Outtake implements Subsystem {
     private boolean velocityLocked = false;
 
     // Configurable PID coefficients
-    public static double kP = 0.195; //correcting towards target
-    public static double kI = 0.0000; //steady-state error
-    public static double kD = 0.012; //cushioning, prevent overshoot
-    public static double kF = 0.0085; //push towards target
+    private static double kP = 0.195; //correcting towards target
+    private static double kI = 0.0000; //steady-state error
+    private static double kD = 0.012; //cushioning, prevent overshoot
+//    public static double kF = 0.0085; //push towards target
+    private static double kF = 0.8;
 
     // Simple PID controllers
     private SimplePID TmotorPID;
@@ -61,7 +63,8 @@ public class Outtake implements Subsystem {
         led2 = hardwareMap.get(Servo.class, "led2");
         spinServo1 = hardwareMap.get(CRServo.class, "spinServo1");
         spinServo2 = hardwareMap.get(CRServo.class, "spinServo2");
-        gateServo = hardwareMap.get(Servo.class, "gateServo");
+        gateServo1 = hardwareMap.get(Servo.class, "gateServo1");
+        gateServo2 = hardwareMap.get(Servo.class, "gateServo2");
 
         // Initialize beam break sensor
         beamBreak = hardwareMap.get(DigitalChannel.class, "beamBreak");
@@ -75,7 +78,8 @@ public class Outtake implements Subsystem {
     }
 
     public void reset() {
-        gateServo.setPosition(0.95);
+        gateServo1.setPosition(0.85);
+        gateServo2.setPosition(0.15);
         Tmotor.setPower(0);
         Bmotor.setPower(0);
         spinServo1.setPower(0);
@@ -103,16 +107,22 @@ public class Outtake implements Subsystem {
         // Update local target velocity with velocity locking
         if (shooting) {
             // Lock velocity at the start of shooting for consistency
-            if (!velocityLocked && targetVel > 0.0) {
+//            if (!velocityLocked && targetVel > 0.0) {
+//                localTargetVel = targetVel;
+//                velocityLocked = true;
+//            }
+            if (targetVel > 0.0) {
                 localTargetVel = targetVel;
-                velocityLocked = true;
+                //velocityLocked = true;
             }
             // Don't update localTargetVel again until shooting stops
-        } else if (spinup) {
-            // Auto-spinup when tag is visible
-            velocityLocked = false;
-            localTargetVel = 600.0; // 100 rpm = prespinup rpm
-        } else {
+        }
+//        else if (prespinup) {
+//            // Auto-spinup when tag is visible
+//            velocityLocked = false;
+//            localTargetVel = targetVel; // 100 rpm = prespinup rpm
+//        }
+        else {
             // Not shooting and not spinning up = gradual spindown
             velocityLocked = false;
             if (localTargetVel > 0) {
@@ -257,15 +267,15 @@ public class Outtake implements Subsystem {
 
     public Command open = new Command() {
         private long start = 0;
-        @Override public void start() { start = System.currentTimeMillis(); gateServo.setPosition(0.2); }
-        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo.setPosition(0.19); }
+        @Override public void start() { start = System.currentTimeMillis(); gateServo1.setPosition(0.0); gateServo2.setPosition(1.0);}
+        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo1.setPosition(0.0); gateServo2.setPosition(1.0);}
         @Override public boolean isDone() { return true; }
     };
 
     public Command close = new Command() {
         private long start = 0;
-        @Override public void start() { start = System.currentTimeMillis(); gateServo.setPosition(0.93); }
-        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo.setPosition(0.95); }
+        @Override public void start() { start = System.currentTimeMillis(); gateServo1.setPosition(0.85); gateServo2.setPosition(0.15);}
+        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo1.setPosition(1.0); gateServo2.setPosition(0.0);}
         @Override public boolean isDone() { return true; }
     };
 

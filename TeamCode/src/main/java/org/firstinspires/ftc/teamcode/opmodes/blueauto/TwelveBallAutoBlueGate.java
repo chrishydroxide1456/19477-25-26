@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.blueauto;
 
-import static org.firstinspires.ftc.teamcode.opmodes.TeleOpSoloRedPedro.telestartingPose;
+import static org.firstinspires.ftc.teamcode.opmodes.RedTeleOp.telestartingPose;
 
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
