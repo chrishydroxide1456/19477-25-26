@@ -28,15 +28,15 @@ public class TwelveBallAutoRedGate extends NextFTCOpMode {
     private List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     // Timing constants (tunable)
-    private static final long SHOOT_SEQUENCE_TIME = 1100;
+    private static final long SHOOT_SEQUENCE_TIME = 1600;
     private static final long INTAKE_START_DELAY = 3000;
     private static final long GATE_WAIT_TIME = 1250;  // Wait at gate before continuing
 
     // Shot velocities (tunable for each shot)
-    private static final double SHOT_1_VELOCITY = 1175.0 + 25.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 1175.0 + 25.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 1175.0 + 25.0;  // After spike mark 2
-    private static final double SHOT_4_VELOCITY = 1175.0 + 25.0;  // After spike mark 3
+    private static final double SHOT_1_VELOCITY = 955.0 + 25.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 955.0 + 25.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 955.0 + 25.0;  // After spike mark 2
+    private static final double SHOT_4_VELOCITY = 955.0 + 25.0;  // After spike mark 3
 
     private enum AutoState {
         IDLE,
