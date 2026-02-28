@@ -26,7 +26,7 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
     private List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     // Timing constants (tunable)
-    private static final long SHOOT_SEQUENCE_TIME = 2900;
+    private static final long SHOOT_SEQUENCE_TIME = 1700;
     private static final long INTAKE_START_DELAY = 800;
 
     // Shot velocities (tunable for each shot). tune later
@@ -198,9 +198,6 @@ public class FarNineBallAutoRed extends NextFTCOpMode {
                 break;
 
             case INTAKE_HUMAN:
-                follower.followPath(TrajectoryFactory.HumanCollect, true);
-                break;
-
             case INTAKE_HUMAN_2:
                 follower.followPath(TrajectoryFactory.HumanCollect, true);
                 break;

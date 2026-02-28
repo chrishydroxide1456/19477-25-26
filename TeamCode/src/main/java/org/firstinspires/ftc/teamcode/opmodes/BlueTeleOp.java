@@ -41,7 +41,7 @@ public class BlueTeleOp extends NextFTCOpMode {
 
     public Follower follower;
     //public static Pose telestartingPose; //set later, see auto ex
-    public static Pose telestartingPose = new Pose(40.0, 112.0, Math.toRadians(180.0));
+    public static Pose telestartingPose = new Pose(27.0, 70.0, Math.toRadians(180.0));
     private boolean automatedDrive = false;
 
     private boolean autoaim = false;
@@ -97,6 +97,7 @@ public class BlueTeleOp extends NextFTCOpMode {
             switch (endpose) {
                 case gatePose:
                     builder
+
                             .addPath(new Path (new BezierCurve(follower::getPose, new Pose(39.2, 76.32), new Pose (24.0, 65.0))))
                             .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(180.0), 0.8))
                             .setVelocityConstraint(5.0)

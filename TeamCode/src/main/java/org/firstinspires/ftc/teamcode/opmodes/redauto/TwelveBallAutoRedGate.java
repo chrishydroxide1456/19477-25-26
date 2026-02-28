@@ -307,27 +307,27 @@ public class TwelveBallAutoRedGate extends NextFTCOpMode {
      */
     private void executeShootSequence() {
 
-        // T+500ms: Open gate
-        scheduleAction(10, () -> {
-            outtake.open.schedule();
-        });
-
         // T+0ms: Reverse intake and spin servos backward
-        scheduleAction(50, () -> {
+        scheduleAction(10, () -> {
             intake.revmoving.schedule();
             outtake.spinServo1.setPower(-1.0);
             outtake.spinServo2.setPower(-1.0);
         });
 
+        // T+500ms: Open gate
+        scheduleAction(50, () -> {
+            outtake.open.schedule();
+        });
+
         // T+210ms: Stop intake and spin servos (210ms of reversing)
-        scheduleAction(250, () -> {
+        scheduleAction(290, () -> {
             intake.off.schedule();
             outtake.spinServo1.setPower(0);
             outtake.spinServo2.setPower(0);
         });
 
         // T+900ms: Start intake forward
-        scheduleAction(260, () -> {
+        scheduleAction(300, () -> {
             intake.autonshooting.schedule();
         });
 

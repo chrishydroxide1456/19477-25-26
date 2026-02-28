@@ -12,7 +12,7 @@ public class TrajectoryFactory {
 
     // Poses - all positions on the field
     public static Pose goalStartPos = new Pose(26.0, 130.0, Math.toRadians(-40));
-    public static Pose farStartPos = new Pose(56.0, 8.0, Math.toRadians(270));
+    public static Pose farStartPos = new Pose(56.0, 8.0, Math.toRadians(-90));
     public static Pose farParkPos = new Pose(37.0, 13.0, Math.toRadians(180));
     //public static Pose scorePos = new Pose(57, 88, Math.toRadians(-48.5));
     public static Pose scorePos = new Pose(60, 90, Math.toRadians(-49.5));
@@ -50,9 +50,9 @@ public class TrajectoryFactory {
 
     public static Pose farscorePos = new Pose(58.9, 18.0, Math.toRadians(115.5-180.0));
 
-    public static Pose HumanArtifacts = new Pose(13.5, 17.3, Math.toRadians(16.0-180.0));
+    public static Pose HumanArtifacts = new Pose(20.22, 18.96, Math.toRadians(-144.0));
 
-    public static Pose HumanZone = new Pose(11.7, 12.3, Math.toRadians(16.0-180.0));
+    public static Pose HumanZone = new Pose(9.47, 9.34, Math.toRadians(-90));
 
     // Path chains
     public static PathChain goalToScore;
@@ -178,7 +178,7 @@ public class TrajectoryFactory {
                 .build();
 
         farStartToScore = follower.pathBuilder()
-                .addPath(new BezierCurve(farStartPos, farscorePos))
+                .addPath(new BezierLine(farStartPos, farscorePos))
                 .setLinearHeadingInterpolation(farStartPos.getHeading(), farscorePos.getHeading())
                 .build();
 
@@ -193,12 +193,14 @@ public class TrajectoryFactory {
                 .build();
 
         farScoreToHuman = follower.pathBuilder()
-                .addPath(new BezierLine(farscorePos, HumanArtifacts))
+                .addPath(new BezierCurve(farscorePos, new Pose(38.0063, 12.498), HumanArtifacts))
                 .setLinearHeadingInterpolation(farscorePos.getHeading(), HumanArtifacts.getHeading())
+                .setBrakingStart(0.65)
+                .setBrakingStrength(0.9)
                 .build();
 
         HumanCollect = follower.pathBuilder()
-                .addPath(new BezierLine(HumanArtifacts, HumanZone))
+                .addPath(new BezierCurve(HumanArtifacts, new Pose(7.73768, 16.13023), HumanZone))
                 .setLinearHeadingInterpolation(HumanArtifacts.getHeading(), HumanZone.getHeading()).setVelocityConstraint(20.0)
                 .build();
 
@@ -252,6 +254,8 @@ public class TrajectoryFactory {
         farScoreToHuman = follower.pathBuilder()
                 .addPath(new BezierLine(farscorePos.mirror(), HumanArtifacts.mirror()))
                 .setLinearHeadingInterpolation(farscorePos.mirror().getHeading(), HumanArtifacts.mirror().getHeading())
+                .setBrakingStart(0.65)
+                .setBrakingStrength(0.9)
                 .build();
 
         HumanCollect = follower.pathBuilder()

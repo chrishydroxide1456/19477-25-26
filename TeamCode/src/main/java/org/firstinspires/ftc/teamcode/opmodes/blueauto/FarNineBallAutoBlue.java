@@ -8,11 +8,12 @@ import dev.nextftc.ftc.NextFTCOpMode;
 import dev.nextftc.ftc.components.BulkReadComponent;
 import org.firstinspires.ftc.teamcode.opmodes.TrajectoryFactory;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.*;
+import org.firstinspires.ftc.teamcode.opmodes.redauto.FarNineBallAutoRed;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import java.util.*;
 
-@Autonomous(name = "🔵 6 Far", group = "Blue", preselectTeleOp = "TeleOpBlue")
-public class FarSixBallAutoBlue extends NextFTCOpMode {
+@Autonomous(name = "🔵 9 Far", group = "Blue", preselectTeleOp = "TeleOpBlue")
+public class FarNineBallAutoBlue extends NextFTCOpMode {
 
     private Intake intake;
     private Outtake outtake;
@@ -26,14 +27,14 @@ public class FarSixBallAutoBlue extends NextFTCOpMode {
     private List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     // Timing constants (tunable)
-    private static final long SHOOT_SEQUENCE_TIME = 2900;
+    private static final long SHOOT_SEQUENCE_TIME = 1700;
     private static final long INTAKE_START_DELAY = 800;
 
     // Shot velocities (tunable for each shot). tune later
-    private static final double SHOT_1_VELOCITY = 1525.0 + 25.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 1525.0 + 25.0;  // After human
+    private static final double SHOT_1_VELOCITY = 2350.0 + 25.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 2350.0 + 25.0;  // After human
 
-    private static final double SHOT_3_VELOCITY = 1525.0 + 25.0; //After 2nd human
+    private static final double SHOT_3_VELOCITY = 2350.0 + 25.0; //After 2nd human
 
     private enum AutoState {
         IDLE,
@@ -42,7 +43,7 @@ public class FarSixBallAutoBlue extends NextFTCOpMode {
         // Second volley (human)
         DRIVE_TO_HUMAN, INTAKE_HUMAN, DRIVE_BACK_TO_SCORE_2, SHOOT_2,
 //         Third volley (spike mark 1)
-        DRIVE_TO_HUMAN_2, INTAKE_HUMAN_2, DRIVE_BACK_TO_SCORE_3, SHOOT_3,
+        DRIVE_BACK_TO_HUMAN, INTAKE_HUMAN_2, DRIVE_BACK_TO_SCORE_3, SHOOT_3,
         // Park
         DRIVE_TO_PARK, COMPLETE
     }
@@ -57,7 +58,7 @@ public class FarSixBallAutoBlue extends NextFTCOpMode {
         }
     }
 
-    public FarSixBallAutoBlue() {
+    public FarNineBallAutoBlue() {
         intake = Intake.INSTANCE;
         outtake = Outtake.INSTANCE;
         ll = LL.INSTANCE;
@@ -131,13 +132,14 @@ public class FarSixBallAutoBlue extends NextFTCOpMode {
                 if (!follower.isBusy()) changeState(AutoState.SHOOT_2);
                 break;
             case SHOOT_2:
-                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_TO_HUMAN_2);
+                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_BACK_TO_HUMAN);
                 break;
-            case DRIVE_TO_HUMAN_2:
-                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.INTAKE_HUMAN_2);
+
+            case DRIVE_BACK_TO_HUMAN:
+                if (!follower.isBusy()) changeState(AutoState.INTAKE_HUMAN_2);
                 break;
             case INTAKE_HUMAN_2:
-                if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.DRIVE_BACK_TO_SCORE_3);
+                if (!follower.isBusy()) changeState(AutoState.DRIVE_BACK_TO_SCORE_3);
                 break;
             case DRIVE_BACK_TO_SCORE_3:
                 if (getStateTime() > SHOOT_SEQUENCE_TIME) changeState(AutoState.SHOOT_3);
@@ -177,7 +179,7 @@ public class FarSixBallAutoBlue extends NextFTCOpMode {
                 break;
 
             case DRIVE_TO_HUMAN:
-            case DRIVE_TO_HUMAN_2:
+            case DRIVE_BACK_TO_HUMAN:
                 // Stop motors while collecting balls
                 Outtake.shooting = false;
                 LL.targetVel = 0.0;

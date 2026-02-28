@@ -13,11 +13,11 @@ public class Routines {
     public static boolean outtaking = false;
 
     // Timing constants
-    private static final long INTAKE_REVERSE_START_MS = 50;
+    private static final long INTAKE_REVERSE_START_MS = 10;
 //    private static final long INTAKE_STOP_MS = 250;          // NEW: Stop 150ms after reversing starts
-    private static final long GATE_OPEN_MS = 10;
-    private static final long INTAKE_FORWARD_START_MS = 250;  // 250ms pause (1700 - 1450 = 250ms)
-    private static final long SEQUENCE_DURATION_MS = 950;
+    private static final long GATE_OPEN_MS = 50;
+    private static final long INTAKE_FORWARD_START_MS = 300;  // 250ms pause (1700 - 1450 = 250ms)
+    private static final long SEQUENCE_DURATION_MS = 1250;
     private static final double HEADING_TOLERANCE = 0.7;
     private static final long ALIGN_TIMEOUT_MS = 3000;
 

@@ -38,7 +38,7 @@ public class RedTeleOp extends NextFTCOpMode {
 
     public Follower follower;
     //public static Pose telestartingPose; //set later, see auto ex
-    public static Pose telestartingPose = new Pose(104.0, 112.0, Math.toRadians(0.0));
+    public static Pose telestartingPose = new Pose(118.0, 70.0, Math.toRadians(0.0));
     private boolean automatedDrive = false;
 
     private boolean autoaim = false;

@@ -28,15 +28,15 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
     private List<ScheduledAction> scheduledActions = new ArrayList<>();
 
     // Timing constants (tunable)
-    private static final long SHOOT_SEQUENCE_TIME = 2000;
+    private static final long SHOOT_SEQUENCE_TIME = 1600;
     private static final long INTAKE_START_DELAY = 3000;
     private static final long GATE_WAIT_TIME = 1250;  // Wait at gate before continuing
 
     // Shot velocities (tunable for each shot)
-    private static final double SHOT_1_VELOCITY = 1175 + 25.0;  // Preload shot
-    private static final double SHOT_2_VELOCITY = 1175.0 + 25.0;  // After spike mark 1
-    private static final double SHOT_3_VELOCITY = 1175.0 + 25.0;  // After spike mark 2
-    private static final double SHOT_4_VELOCITY = 1175.0 + 25.0;  // After spike mark 3
+    private static final double SHOT_1_VELOCITY = 955 + 25.0;  // Preload shot
+    private static final double SHOT_2_VELOCITY = 955.0 + 25.0;  // After spike mark 1
+    private static final double SHOT_3_VELOCITY = 955.0 + 25.0;  // After spike mark 2
+    private static final double SHOT_4_VELOCITY = 955.0 + 25.0;  // After spike mark 3
 
     private enum AutoState {
         IDLE,
@@ -307,26 +307,26 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
      */
     private void executeShootSequence() {
         // T+0ms: Reverse intake and spin servos backward
-        scheduleAction(0, () -> {
+        scheduleAction(10, () -> {
             intake.revmoving.schedule();
             outtake.spinServo1.setPower(-1.0);
             outtake.spinServo2.setPower(-1.0);
         });
 
+        // T+500ms: Open gate
+        scheduleAction(50, () -> {
+            outtake.open.schedule();
+        });
+
         // T+210ms: Stop intake and spin servos (210ms of reversing)
-        scheduleAction(185, () -> {
+        scheduleAction(290, () -> {
             intake.off.schedule();
             outtake.spinServo1.setPower(0);
             outtake.spinServo2.setPower(0);
         });
 
-        // T+500ms: Open gate
-        scheduleAction(200, () -> {
-            outtake.open.schedule();
-        });
-
         // T+900ms: Start intake forward
-        scheduleAction(400, () -> {
+        scheduleAction(300, () -> {
             intake.autonshooting.schedule();
         });
 
