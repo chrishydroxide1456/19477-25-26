@@ -272,7 +272,7 @@ public class RedTeleOp extends NextFTCOpMode {
         if (goalDistIn > 105.0) {
             outtake.setHoodPosition(minHoodServo);
         } else {
-            outtake.setHoodPosition(maxHoodServo);
+            outtake.setHoodPosition(maxHoodServo); //NOAH NEED TO TUNE
         }
 
 
@@ -281,7 +281,7 @@ public class RedTeleOp extends NextFTCOpMode {
             double calculatedVel = baseRPM;
             targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
                     ? 0.35 * calculatedVel + compensation : 800.0; // + 550 rpm when far
-        } else {
+        } else { //NOAH NEED TO TUNE
             double calculatedVel = baseRPM;
             targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
                     ? 0.35 * calculatedVel + 250 : 800.0;

@@ -267,7 +267,7 @@ public class BlueTeleOp extends NextFTCOpMode {
         if (goalDistIn > 105.0) {
             outtake.setHoodPosition(minHoodServo);
         } else {
-            outtake.setHoodPosition(maxHoodServo);
+            outtake.setHoodPosition(maxHoodServo); //NOAH NEED TO TUNE
         }
 
 

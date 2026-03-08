@@ -52,7 +52,7 @@ public class Outtake implements Subsystem {
     private static double kP = 0.3; //correcting towards target
     private static double kI = 0.0000; //steady-state error
     private static double kD = 0.012; //cushioning, prevent overshoot
-    private static double kF = 0.06;
+    private static double kF = 0.06; //NOAH NEED TO TUNE
 
     // Simple PID controllers
     private SimplePID TmotorPID;
