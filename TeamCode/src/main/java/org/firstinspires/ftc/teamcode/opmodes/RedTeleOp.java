@@ -279,7 +279,7 @@ public class RedTeleOp extends NextFTCOpMode {
             targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
                     ? 0.35 * calculatedVel + 250 : 800.0;
         }
-//        }
+
 
         if (!automatedDrive) {
             if (autoaim) {
