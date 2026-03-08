@@ -81,7 +81,7 @@ public class BlueTeleOp extends NextFTCOpMode {
     public static double minHoodDeg   = 37.288274;
     public static double maxHoodDeg   = 55.861336;
     public static double minHoodServo = 0.0;
-    public static double maxHoodServo = 0.15;
+    public static double maxHoodServo = 0.12; //0.15
 
     private static final double FIELD_X_GOAL_IN = 13.0;
     private static final double FIELD_Y_GOAL_IN = 138.0;
@@ -305,7 +305,7 @@ public class BlueTeleOp extends NextFTCOpMode {
                 }
 
                 follower.setTeleOpDrive(
-                        gamepad2.left_stick_y * multi,
+                        -gamepad2.left_stick_y * multi,
                         -1.1 * gamepad2.left_stick_x * multi,
                         turnPower,
                         true
@@ -313,7 +313,7 @@ public class BlueTeleOp extends NextFTCOpMode {
                 );
             } else {
                 follower.setTeleOpDrive(
-                        gamepad2.left_stick_y * multi,
+                        -gamepad2.left_stick_y * multi,
                         -1.1 * gamepad2.left_stick_x * multi,
                         -gamepad2.right_stick_x * multi,
                         true
