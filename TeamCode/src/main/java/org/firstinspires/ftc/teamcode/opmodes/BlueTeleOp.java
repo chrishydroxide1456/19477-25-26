@@ -263,7 +263,12 @@ public class BlueTeleOp extends NextFTCOpMode {
 
         double baseRPM = shot.rpm;
         double hoodServoPos = hoodDegToServo(shot.hoodDeg);
-        outtake.setHoodPosition(hoodServoPos);
+        //outtake.setHoodPosition(hoodServoPos); adjusting
+        if (goalDistIn > 105.0) {
+            outtake.setHoodPosition(minHoodServo);
+        } else {
+            outtake.setHoodPosition(maxHoodServo);
+        }
 
 
 //        if (!Outtake.shooting) {

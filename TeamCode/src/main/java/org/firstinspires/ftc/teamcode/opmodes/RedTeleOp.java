@@ -82,6 +82,8 @@ public class RedTeleOp extends NextFTCOpMode {
     public static double minHoodServo = 0.0;
     public static double maxHoodServo = 0.15;
 
+    //
+
     private static final double FIELD_X_GOAL_IN = 132.0;
     private static final double FIELD_Y_GOAL_IN = 138.0;
 
@@ -266,7 +268,12 @@ public class RedTeleOp extends NextFTCOpMode {
 
         double baseRPM = shot.rpm;
         double hoodServoPos = hoodDegToServo(shot.hoodDeg);
-        outtake.setHoodPosition(hoodServoPos);
+        //outtake.setHoodPosition(hoodServoPos); adjusting
+        if (goalDistIn > 105.0) {
+            outtake.setHoodPosition(minHoodServo);
+        } else {
+            outtake.setHoodPosition(maxHoodServo);
+        }
 
 
 //        if (!Outtake.shooting) {
