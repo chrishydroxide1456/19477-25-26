@@ -69,8 +69,8 @@ public class Routines {
             @Override
             public void start() {
                 // Stop spin servos immediately
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
+                //outtake.spinServo1.setPower(0);
+                //outtake.spinServo2.setPower(0);
 
                 // Set fixed velocity for auto
                 LL.targetVel = 1600.0;
@@ -90,8 +90,8 @@ public class Routines {
                 // Reverse intake at 1300ms AND spin servos backward
                 if (elapsed > INTAKE_REVERSE_START_MS && !intakeReversed) {
                     Intake.INSTANCE.revmoving.schedule();
-                    outtake.spinServo1.setPower(-1.0);
-                    outtake.spinServo2.setPower(-1.0);
+                    //outtake.spinServo1.setPower(-1.0);
+                    //outtake.spinServo2.setPower(-1.0);
                     intakeReversed = true;
                 }
 
@@ -112,8 +112,8 @@ public class Routines {
                 // Start intake forward at 1700ms (250ms pause after stopping)
                 if (elapsed > INTAKE_FORWARD_START_MS && !intakeForwarded) {
                     Intake.INSTANCE.onmoving.schedule();
-                    outtake.spinServo1.setPower(0);
-                    outtake.spinServo2.setPower(0);
+                    //outtake.spinServo1.setPower(0);
+                    //outtake.spinServo2.setPower(0);
                     intakeForwarded = true;
                 }
 
@@ -121,8 +121,8 @@ public class Routines {
                 if (elapsed > SEQUENCE_DURATION_MS) {
                     Outtake.INSTANCE.close.schedule();
                     Intake.INSTANCE.off.schedule();
-                    outtake.spinServo1.setPower(0);
-                    outtake.spinServo2.setPower(0);
+                    //outtake.spinServo1.setPower(0);
+                    //outtake.spinServo2.setPower(0);
                     Outtake.shooting = false;
                 }
             }
@@ -137,8 +137,8 @@ public class Routines {
                 Outtake.shooting = false;
                 Outtake.INSTANCE.close.schedule();
                 Intake.INSTANCE.off.schedule();
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
+                //outtake.spinServo1.setPower(0);
+                //outtake.spinServo2.setPower(0);
                 outtaking = false;
             }
         };
@@ -160,8 +160,8 @@ public class Routines {
 //                }
 
                 // Stop spin servos immediately
-                outtake.spinServo1.setPower(-1.0);
-                outtake.spinServo2.setPower(-1.0);
+                //outtake.spinServo1.setPower(-1.0);
+                //outtake.spinServo2.setPower(-1.0);
 
                 Outtake.shooting = true;
                 sequenceStart = System.currentTimeMillis();
@@ -179,8 +179,8 @@ public class Routines {
                 // Reverse intake at 1300ms AND spin servos backward
                 if (elapsed > INTAKE_REVERSE_START_MS && !intakeReversed) {
                     Intake.INSTANCE.revmoving.schedule();
-                    outtake.spinServo1.setPower(-1.0);
-                    outtake.spinServo2.setPower(-1.0);
+                    //outtake.spinServo1.setPower(-1.0);
+                    //outtake.spinServo2.setPower(-1.0);
                     intakeReversed = true;
                 }
 
@@ -201,8 +201,8 @@ public class Routines {
                 // Start intake forward at 1700ms (250ms pause after stopping)
                 if (elapsed > INTAKE_FORWARD_START_MS && !intakeForwarded) {
                     Intake.INSTANCE.onmoving.schedule();
-                    outtake.spinServo1.setPower(0.75);// was 0 before
-                    outtake.spinServo2.setPower(0.75);// was 0 before
+                    //outtake.spinServo1.setPower(0.75);// was 0 before
+                    //outtake.spinServo2.setPower(0.75);// was 0 before
                     intakeForwarded = true;
                 }
 
@@ -210,8 +210,8 @@ public class Routines {
                 if (elapsed > SEQUENCE_DURATION_MS) {
                     Outtake.INSTANCE.close.schedule();
                     Intake.INSTANCE.off.schedule();
-                    outtake.spinServo1.setPower(0);
-                    outtake.spinServo2.setPower(0);
+                    //outtake.spinServo1.setPower(0);
+                    //outtake.spinServo2.setPower(0);
                     Outtake.shooting = false;
                 }
             }
@@ -226,8 +226,8 @@ public class Routines {
                 Outtake.shooting = false;
                 Outtake.INSTANCE.close.schedule();
                 Intake.INSTANCE.off.schedule();
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
+                //outtake.spinServo1.setPower(0);
+                //outtake.spinServo2.setPower(0);
             }
         };
     }
@@ -251,8 +251,8 @@ public class Routines {
 
                 // Start spin servos after 400ms delay
                 if (elapsed > 400 && !servosStarted) {
-                    outtake.spinServo1.setPower(-1.0);
-                    outtake.spinServo2.setPower(-1.0);
+                    //outtake.spinServo1.setPower(-1.0);
+                    //outtake.spinServo2.setPower(-1.0);
                     servosStarted = true;
                 }
             }
@@ -271,8 +271,8 @@ public class Routines {
                 //drive.setMulti(1.0);
                 intake.keeping.schedule();
                 // Stop spin servos
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
+                //outtake.spinServo1.setPower(0);
+                //outtake.spinServo2.setPower(0);
             }
 
             @Override
@@ -289,8 +289,8 @@ public class Routines {
                 //drive.setMulti(1.0);
                 intake.off.schedule();
                 // Stop spin servos
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
+                //outtake.spinServo1.setPower(0);
+                //outtake.spinServo2.setPower(0);
             }
 
             @Override

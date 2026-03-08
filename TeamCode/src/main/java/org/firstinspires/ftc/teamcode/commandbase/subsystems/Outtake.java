@@ -23,11 +23,12 @@ public class Outtake implements Subsystem {
     public final MotorEx Tmotor = new MotorEx("Tmotor").reversed();
     public final MotorEx Bmotor = new MotorEx("Bmotor");
     private Servo gateServo1;
-    private Servo gateServo2;
-    public CRServo spinServo1;
-    public CRServo spinServo2;
-    public Servo led;
-    public Servo led2;  // Second LED that mirrors the first
+    //private Servo gateServo2;
+    private Servo hoodServo;
+//    public CRServo spinServo1;
+//    public CRServo spinServo2;
+//    public Servo led;
+//    public Servo led2;  // Second LED that mirrors the first
 
     // Beam break sensor
     private DigitalChannel beamBreak;
@@ -58,12 +59,13 @@ public class Outtake implements Subsystem {
     private SimplePID BmotorPID;
 
     public void initialize(HardwareMap hardwareMap) {
-        led = hardwareMap.get(Servo.class, "led");
-        led2 = hardwareMap.get(Servo.class, "led2");
-        spinServo1 = hardwareMap.get(CRServo.class, "spinServo1");
-        spinServo2 = hardwareMap.get(CRServo.class, "spinServo2");
+//        led = hardwareMap.get(Servo.class, "led");
+//        led2 = hardwareMap.get(Servo.class, "led2");
+        //spinServo1 = hardwareMap.get(CRServo.class, "spinServo1");
+        //spinServo2 = hardwareMap.get(CRServo.class, "spinServo2");
         gateServo1 = hardwareMap.get(Servo.class, "gateServo1");
-        gateServo2 = hardwareMap.get(Servo.class, "gateServo2");
+        //gateServo2 = hardwareMap.get(Servo.class, "gateServo2");
+        hoodServo = hardwareMap.get(Servo.class, "hoodServo"); //hoodservo!!!
 
         // Initialize beam break sensor
         beamBreak = hardwareMap.get(DigitalChannel.class, "beamBreak");
@@ -77,14 +79,15 @@ public class Outtake implements Subsystem {
     }
 
     public void reset() {
-        gateServo1.setPosition(0.75);
-        gateServo2.setPosition(0.25);
+        gateServo1.setPosition(0.0);
+        //gateServo2.setPosition(0.25);
+        hoodServo.setPosition(0.0);
         Tmotor.setPower(0);
         Bmotor.setPower(0);
-        spinServo1.setPower(0);
-        spinServo2.setPower(0);
-        led.setPosition(0.277);
-        led2.setPosition(0.277);
+//        spinServo1.setPower(0);
+//        spinServo2.setPower(0);
+//        led.setPosition(0.277);
+//        led2.setPosition(0.277);
         shooting = false;
         spinup = false;
         lastFlashTime = 0;
@@ -163,7 +166,7 @@ public class Outtake implements Subsystem {
         }
 
         // LED control based on state
-        updateLED();
+//        updateLED();
     }
 
     /**
@@ -236,8 +239,8 @@ public class Outtake implements Subsystem {
         }
 
         // Set both LEDs to the same color
-        led.setPosition(ledPosition);
-        led2.setPosition(ledPosition);
+//        led.setPosition(ledPosition);
+//        led2.setPosition(ledPosition);
     }
 
     // Public methods for telemetry/debugging
@@ -266,17 +269,21 @@ public class Outtake implements Subsystem {
 
     public Command open = new Command() {
         private long start = 0;
-        @Override public void start() { start = System.currentTimeMillis(); gateServo1.setPosition(0.0); gateServo2.setPosition(1.0);}
-        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo1.setPosition(0.0); gateServo2.setPosition(1.0);}
+        @Override public void start() { start = System.currentTimeMillis(); gateServo1.setPosition(0.15);}
+        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo1.setPosition(0.15);}
         @Override public boolean isDone() { return true; }
     };
 
     public Command close = new Command() {
         private long start = 0;
-        @Override public void start() { start = System.currentTimeMillis(); gateServo1.setPosition(0.75); gateServo2.setPosition(0.25);}
-        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo1.setPosition(0.75); gateServo2.setPosition(0.25);}
+        @Override public void start() { start = System.currentTimeMillis(); gateServo1.setPosition(0.0);}
+        @Override public void update() { if (System.currentTimeMillis() - start > 500) gateServo1.setPosition(0.0);}
         @Override public boolean isDone() { return true; }
     };
+
+    public void setHoodPosition(double hoodangle) {
+        hoodServo.setPosition(hoodangle);
+    }
 
     // Simple PID Controller - reads from configurable static variables
     private static class SimplePID {

@@ -39,7 +39,7 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .useBrakeModeInTeleOp(true)
+            .useBrakeModeInTeleOp(false)
             .xVelocity(85.568355530) //56.3066329
             .yVelocity(69.180009015); //38.216766357
             //.useBrakeModeInTeleOp(false); //true or false??
@@ -51,7 +51,7 @@ public class Constants {
             .strafePodX(-4.48) //could be more accurate
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
-            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
     //run turn tuner to find yawscalar later
 
 

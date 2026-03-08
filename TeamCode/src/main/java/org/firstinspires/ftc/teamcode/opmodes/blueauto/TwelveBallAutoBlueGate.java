@@ -216,8 +216,8 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
 
                 // Schedule intake to start after delay
                 scheduleAction(INTAKE_START_DELAY, () -> {
-                    outtake.spinServo1.setPower(-0.7);
-                    outtake.spinServo2.setPower(-0.7);
+                    //outtake.spinServo1.setPower(-0.7);
+                    //outtake.spinServo2.setPower(-0.7);
                 });
                 break;
 
@@ -246,8 +246,8 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
             case DRIVE_GATE_TO_SCORE_2:
                 // Switch to keeping mode and stop spin servos
                 intake.keeping.schedule();
-                outtake.spinServo1.setPower(-0.5);
-                outtake.spinServo2.setPower(-0.5);
+                //outtake.spinServo1.setPower(-0.5);
+                //outtake.spinServo2.setPower(-0.5);
 
                 // START SPINNING UP MOTORS DURING DRIVE BACK
                 Outtake.shooting = true;
@@ -261,8 +261,8 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
             case DRIVE_BACK_TO_SCORE_4:
                 // Switch to keeping mode and stop spin servos
                 intake.keeping.schedule();
-                outtake.spinServo1.setPower(-0.5);
-                outtake.spinServo2.setPower(-0.5);
+                //outtake.spinServo1.setPower(-0.5);
+                //outtake.spinServo2.setPower(-0.5);
 
                 // START SPINNING UP MOTORS DURING DRIVE BACK
                 Outtake.shooting = true;
@@ -293,8 +293,8 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
 
             case COMPLETE:
                 intake.off.schedule();
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
+                //outtake.spinServo1.setPower(0);
+                //outtake.spinServo2.setPower(0);
                 LL.targetVel = 0.0;
                 Outtake.shooting = false;
                 break;
@@ -309,8 +309,8 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
         // T+0ms: Reverse intake and spin servos backward
         scheduleAction(10, () -> {
             intake.revmoving.schedule();
-            outtake.spinServo1.setPower(-1.0);
-            outtake.spinServo2.setPower(-1.0);
+            //outtake.spinServo1.setPower(-1.0);
+            //outtake.spinServo2.setPower(-1.0);
         });
 
         // T+500ms: Open gate
@@ -321,8 +321,8 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
         // T+210ms: Stop intake and spin servos (210ms of reversing)
         scheduleAction(290, () -> {
             intake.off.schedule();
-            outtake.spinServo1.setPower(0);
-            outtake.spinServo2.setPower(0);
+            //outtake.spinServo1.setPower(0);
+            //outtake.spinServo2.setPower(0);
         });
 
         // T+900ms: Start intake forward
@@ -334,8 +334,8 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
         scheduleAction(SHOOT_SEQUENCE_TIME - 100, () -> {
             outtake.close.schedule();
             intake.off.schedule();
-            outtake.spinServo1.setPower(0);
-            outtake.spinServo2.setPower(0);
+            //outtake.spinServo1.setPower(0);
+            //outtake.spinServo2.setPower(0);
             // Keep Outtake.shooting = true and motors running for next volley
         });
     }
@@ -387,8 +387,8 @@ public class TwelveBallAutoBlueGate extends NextFTCOpMode {
     @Override
     public void onStop() {
         intake.off.schedule();
-        outtake.spinServo1.setPower(0);
-        outtake.spinServo2.setPower(0);
+        //outtake.spinServo1.setPower(0);
+        //outtake.spinServo2.setPower(0);
         outtake.Tmotor.setPower(0);
         outtake.Bmotor.setPower(0);
         LL.targetVel = 0.0;

@@ -192,8 +192,8 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
                 // Schedule intake to start after delay
                 scheduleAction(INTAKE_START_DELAY, () -> {
                     intake.on.schedule();
-                    outtake.spinServo1.setPower(-1.0);
-                    outtake.spinServo2.setPower(-1.0);
+                    //outtake.spinServo1.setPower(-1.0);
+                    //outtake.spinServo2.setPower(-1.0);
                 });
                 break;
 
@@ -206,8 +206,8 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
             case DRIVE_BACK_TO_SCORE_3:
                 // Switch to keeping mode and stop spin servos
                 intake.keeping.schedule();
-                outtake.spinServo1.setPower(0);
-                outtake.spinServo2.setPower(0);
+                //outtake.spinServo1.setPower(0);
+                //outtake.spinServo2.setPower(0);
 
                 // START SPINNING UP MOTORS DURING DRIVE BACK
                 Outtake.shooting = true;
@@ -234,8 +234,8 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
                 // Stop all systems safely
                 try {
                     intake.off.schedule();
-                    outtake.spinServo1.setPower(0);
-                    outtake.spinServo2.setPower(0);
+                    //outtake.spinServo1.setPower(0);
+                    //outtake.spinServo2.setPower(0);
                     outtake.Tmotor.setPower(0);
                     outtake.Bmotor.setPower(0);
                     LL.targetVel = 0.0;
@@ -255,15 +255,15 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
         // T+0ms: Reverse intake and spin servos backward
         scheduleAction(0, () -> {
             intake.revmoving.schedule();
-            outtake.spinServo1.setPower(-1.0);
-            outtake.spinServo2.setPower(-1.0);
+            //outtake.spinServo1.setPower(-1.0);
+            //outtake.spinServo2.setPower(-1.0);
         });
 
         // T+210ms: Stop intake and spin servos (210ms of reversing)
         scheduleAction(185, () -> {
             intake.off.schedule();
-            outtake.spinServo1.setPower(0);
-            outtake.spinServo2.setPower(0);
+            //outtake.spinServo1.setPower(0);
+            //outtake.spinServo2.setPower(0);
         });
 
         // T+500ms: Open gate
@@ -280,8 +280,8 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
         scheduleAction(SHOOT_SEQUENCE_TIME - 100, () -> {
             outtake.close.schedule();
             intake.off.schedule();
-            outtake.spinServo1.setPower(0);
-            outtake.spinServo2.setPower(0);
+            //outtake.spinServo1.setPower(0);
+            //outtake.spinServo2.setPower(0);
             // Keep Outtake.shooting = true and motors running for next volley
         });
     }
@@ -337,8 +337,8 @@ public class FarNineBallAutoBlue extends NextFTCOpMode {
 
         try {
             intake.off.schedule();
-            outtake.spinServo1.setPower(0);
-            outtake.spinServo2.setPower(0);
+            //outtake.spinServo1.setPower(0);
+            //outtake.spinServo2.setPower(0);
             outtake.Tmotor.setPower(0);
             outtake.Bmotor.setPower(0);
             LL.targetVel = 0.0;
