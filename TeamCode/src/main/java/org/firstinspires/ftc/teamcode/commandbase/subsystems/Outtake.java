@@ -43,7 +43,7 @@ public class Outtake implements Subsystem {
 
     // Gradual spindown control
     public static double localTargetVel = 0.0;
-    private static final double SPINDOWN_RATE = 50.0;
+    private static final double SPINDOWN_RATE = 250.0;
 
     // Velocity locking for consistent shooting
     private boolean velocityLocked = false;

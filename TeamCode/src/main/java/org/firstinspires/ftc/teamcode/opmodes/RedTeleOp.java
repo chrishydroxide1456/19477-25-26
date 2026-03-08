@@ -273,11 +273,11 @@ public class RedTeleOp extends NextFTCOpMode {
         if (distance > 105.0) {
             double calculatedVel = baseRPM;
             targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                    ? 0.65 * calculatedVel + compensation : 800.0; // + 550 rpm when far
+                    ? 0.35 * calculatedVel + compensation : 800.0; // + 550 rpm when far
         } else {
             double calculatedVel = baseRPM;
             targetVel = (!Double.isNaN(calculatedVel) && !Double.isInfinite(calculatedVel))
-                    ? 0.65 * calculatedVel + 250 : 800.0;
+                    ? 0.35 * calculatedVel + 250 : 800.0;
         }
 //        }
 
